@@ -1,36 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Subscription Demo App
+
+This is a demonstration application showcasing login, registration, and subscription features using EdgeOne Pages.
+
+## Features
+
+- User authentication (login/register)
+- Subscription plans with different pricing tiers
+- Subscription management
+- Protected dashboard for subscribed users
+
+## Technology Stack
+
+- **Frontend**: Next.js (Static Site Generation)
+- **Components**: Custom components with shadcn/ui
+- **Styling**: Tailwind CSS
+- **Backend**: EdgeOne Functions for APIs
+- **Authentication**: JWT-based authentication
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+ and npm
+
+### Installation
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/yourusername/subscription-demo-app.git
+cd subscription-demo-app
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Create a `.env.local` file in the root directory with the following content:
+
+```
+DEV=true
+VITE_API_URL_DEV=http://localhost:8088/
+FRONT_END_URL_DEV=http://localhost:3000/
+JWT_SECRET=your_jwt_secret_key_here
+```
+
+### Development
+
+1. Start the Next.js development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. In a separate terminal, start the EdgeOne Functions development server:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run functions:dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
 
-## Learn More
+### Test User
 
-To learn more about Next.js, take a look at the following resources:
+You can use the following test user to log in:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Email: user@example.com
+- Password: password123
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project Structure
 
-## Deploy on Vercel
+- `/src` - Next.js frontend code
+  - `/app` - Next.js app directory
+  - `/components` - React components
+  - `/lib` - Utility functions
+- `/functions` - EdgeOne Functions for backend APIs
+  - `/auth` - Authentication APIs (login, register)
+  - `/subscription` - Subscription APIs (subscribe, status, cancel)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deployment
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This application is designed to be deployed to EdgeOne Pages. Follow the EdgeOne documentation for deployment instructions.
+
+## License
+
+This project is licensed under the MIT License.
