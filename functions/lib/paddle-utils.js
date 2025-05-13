@@ -150,7 +150,7 @@ export async function handleCustomerCreation(supabase, customerData) {
       .eq('customer_id', id);
   } else {
     // 检查是否可以关联到现有用户
-    const { data: userData } = await supabase.auth.admin.getUserByEmail(email);
+    // const { data: userData } = await supabase.auth.admin.getUserByEmail(email);
     
     // 创建新客户
     await supabase
@@ -158,7 +158,7 @@ export async function handleCustomerCreation(supabase, customerData) {
       .insert({
         customer_id: id,
         email,
-        user_id: userData?.id || null
+        // user_id: userData?.id || null
       });
   }
 }
