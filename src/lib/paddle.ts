@@ -8,15 +8,21 @@ export const initPaddle = async (): Promise<void> => {
   // Only run on client side
   if (typeof window === "undefined") return;
 
-  // Initialize Paddle
-  console.log(
-    "process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN",
-    process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN
-  );
-  window.Paddle?.Initialize({
-    token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN!,
-  });
-  
+  const script = document.createElement("script");
+  script.src = "https://cdn.paddle.com/paddle/v2/paddle.js";
+  script.async = true;
+
+  script.onload = () => {
+    // Initialize Paddle
+    console.log(
+      "process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN",
+      process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN
+    );
+    window.Paddle?.Initialize({
+      token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN!,
+    });
+  };
+  document.head.appendChild(script);
 };
 
 /**
