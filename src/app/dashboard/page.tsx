@@ -27,8 +27,8 @@ export default function DashboardPage() {
         }
 
         const response = await fetch(
-          process.env.DEV 
-            ? `${process.env.VITE_API_URL_DEV}/subscription/status` 
+          process.env.NEXT_PUBLIC_DEV 
+            ? `${process.env.NEXT_PUBLIC_API_URL_DEV}/subscription/status` 
             : "/subscription/status",
           {
             headers: {
@@ -70,8 +70,8 @@ export default function DashboardPage() {
       }
 
       const response = await fetch(
-        process.env.DEV 
-          ? `${process.env.VITE_API_URL_DEV}/subscription/cancel` 
+        process.env.NEXT_PUBLIC_DEV 
+          ? `${process.env.NEXT_PUBLIC_API_URL_DEV}/subscription/cancel` 
           : "/subscription/cancel",
         {
           method: "POST",

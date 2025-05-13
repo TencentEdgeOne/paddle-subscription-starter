@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import { createSupabaseClient } from '../lib/supabase.js';
 
 // Mock subscription database
 const subscriptions = [];
@@ -38,20 +38,9 @@ export function onRequest(context) {
   }
 
   const token = authHeader.split(' ')[1];
-  let userId;
-
-  try {
-    const decoded = jwt.verify(token, context.env.JWT_SECRET || 'your_jwt_secret_key_here');
-    userId = decoded.id;
-  } catch (err) {
-    return new Response(
-      JSON.stringify({ success: false, message: 'Invalid token' }),
-      { status: 401, headers }
-    );
-  }
 
   return context.request.json()
-    .then((data) => {
+    .then(async (data) => {
       const { planId } = data;
 
       if (!planId) {
@@ -69,60 +58,84 @@ export function onRequest(context) {
         );
       }
 
-      // Check if the user already has an active subscription
-      const existingSubscription = subscriptions.find(
-        sub => sub.userId === userId && sub.status === 'active'
-      );
+      try {
+        // Initialize Supabase client
+        const supabase = createSupabaseClient(context);
+        
+        // Verify the user's token
+        const { data: userData, error: authError } = await supabase.auth.getUser(token);
+        
+        if (authError || !userData.user) {
+          return new Response(
+            JSON.stringify({ success: false, message: 'Invalid token or user not found' }),
+            { status: 401, headers }
+          );
+        }
 
-      if (existingSubscription) {
-        return new Response(
-          JSON.stringify({ success: false, message: 'You already have an active subscription' }),
-          { status: 409, headers }
+        const userId = userData.user.id;
+
+        // Check if the user already has an active subscription
+        const existingSubscription = subscriptions.find(
+          sub => sub.userId === userId && sub.status === 'active'
         );
-      }
 
-      // Create subscription
-      const price = planId === 'basic' ? 49 : planId === 'pro' ? 99 : 199;
-      const planName = planId === 'basic' ? 'Basic' : planId === 'pro' ? 'Professional' : 'Enterprise';
-      
-      const subscription = {
-        id: `sub_${Date.now()}`,
-        userId,
-        planId,
-        plan: planName,
-        status: 'active',
-        amount: `$${price}`,
-        nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        createdAt: new Date().toISOString(),
-      };
+        if (existingSubscription) {
+          return new Response(
+            JSON.stringify({ success: false, message: 'You already have an active subscription' }),
+            { status: 409, headers }
+          );
+        }
 
-      // In a real application, we would save to a database
-      subscriptions.push(subscription);
+        // Create subscription
+        const price = planId === 'basic' ? 49 : planId === 'pro' ? 99 : 199;
+        const planName = planId === 'basic' ? 'Basic' : planId === 'pro' ? 'Professional' : 'Enterprise';
+        
+        const subscription = {
+          id: `sub_${Date.now()}`,
+          userId,
+          planId,
+          plan: planName,
+          status: 'active',
+          amount: `$${price}`,
+          nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          createdAt: new Date().toISOString(),
+        };
 
-      // For demo purposes, we'll simulate different behaviors based on the plan
-      if (planId === 'enterprise') {
-        // Enterprise plan requires a custom checkout process
+        // In a real application, we would save to a database
+        subscriptions.push(subscription);
+
+        // For demo purposes, we'll simulate different behaviors based on the plan
+        if (planId === 'enterprise') {
+          // Enterprise plan requires a custom checkout process
+          return new Response(
+            JSON.stringify({
+              success: true,
+              message: 'Redirecting to enterprise checkout',
+              checkoutUrl: '/checkout/enterprise',
+            }),
+            { status: 200, headers }
+          );
+        }
+
+        // For basic and pro plans, create a direct subscription
         return new Response(
           JSON.stringify({
             success: true,
-            message: 'Redirecting to enterprise checkout',
-            checkoutUrl: '/checkout/enterprise',
+            message: 'Subscription created successfully',
+            subscription,
           }),
           { status: 200, headers }
         );
+      } catch (error) {
+        console.error('Subscription error:', error);
+        return new Response(
+          JSON.stringify({ success: false, message: error.message || 'Server error' }),
+          { status: 500, headers }
+        );
       }
-
-      // For basic and pro plans, create a direct subscription
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: 'Subscription created successfully',
-          subscription,
-        }),
-        { status: 200, headers }
-      );
     })
     .catch((error) => {
+      console.error('Request processing error:', error);
       return new Response(
         JSON.stringify({ success: false, message: error.message || 'Server error' }),
         { status: 500, headers }

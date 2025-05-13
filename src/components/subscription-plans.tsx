@@ -45,7 +45,7 @@ export function SubscriptionPlans() {
         return;
       }
       
-      const response = await fetch(process.env.DEV ? `${process.env.VITE_API_URL_DEV}/subscription/subscribe` : "/subscription/subscribe", {
+      const response = await fetch(process.env.NEXT_PUBLIC_DEV ? `${process.env.NEXT_PUBLIC_API_URL_DEV}/subscription/subscribe` : "/subscription/subscribe", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

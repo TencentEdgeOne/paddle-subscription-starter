@@ -50,7 +50,7 @@ globs: **/*.{ts,tsx,js,jsx,toml,json}
      - File and directory names use lowercase and kebab-case.
   4. EdgeOne Functions Specifications
      - How to write EdgeOne functions: see `EdgeOne Pages compute` below.
-     - You should auto generate local environments for local EdgeOne Functions: DEV=true, VITE_API_URL_DEV=http://localhost:8088/ and FRONT_END_URL_DEV=`http://localhost:${FRONTEND DEV SERVER PORT}/`
+     - You should auto generate local environments for local EdgeOne Functions: NEXT_PUBLIC_DEV=true, NEXT_PUBLIC_API_URL_DEV=http://localhost:8088/ and FRONT_END_URL_DEV=`http://localhost:${FRONTEND DEV SERVER PORT}/`
      - Front end request EdgeOne functions API with `fetch`.
        - When env.DEV equals true, fetch url format is `${env.VITE_API_URL_DEV}/path-to-api`
        - When env.DEV equals true, redirect url in EdgeOne functions is `${env.FRONT_END_URL_DEV}/path-to-redirect`

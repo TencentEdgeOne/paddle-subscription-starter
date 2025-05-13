@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import { createSupabaseClient } from '../lib/supabase.js';
 
 // Mock subscription database from subscribe.js
 // In a real app, this would be a database query
@@ -39,28 +39,48 @@ export function onRequest(context) {
   }
 
   const token = authHeader.split(' ')[1];
-  let userId;
 
-  try {
-    const decoded = jwt.verify(token, context.env.JWT_SECRET || 'your_jwt_secret_key_here');
-    userId = decoded.id;
-  } catch (error) {
+  return (async () => {
+    try {
+      // Initialize Supabase client
+      const supabase = createSupabaseClient(context);
+      
+      // Verify the user's token
+      const { data: userData, error: authError } = await supabase.auth.getUser(token);
+      
+      if (authError || !userData.user) {
+        return new Response(
+          JSON.stringify({ success: false, message: 'Invalid token or user not found' }),
+          { status: 401, headers }
+        );
+      }
+
+      const userId = userData.user.id;
+      
+      // Get the user's most recent subscription
+      const subscription = subscriptions
+        .filter(sub => sub.userId === userId)
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          subscription: subscription || null,
+        }),
+        { status: 200, headers }
+      );
+    } catch (error) {
+      console.error('Subscription status error:', error);
+      return new Response(
+        JSON.stringify({ success: false, message: error.message || 'Server error' }),
+        { status: 500, headers }
+      );
+    }
+  })().catch(error => {
+    console.error('Request processing error:', error);
     return new Response(
-      JSON.stringify({ success: false, message: 'Invalid token' }),
-      { status: 401, headers }
+      JSON.stringify({ success: false, message: error.message || 'Server error' }),
+      { status: 500, headers }
     );
-  }
-
-  // Get the user's most recent subscription
-  const subscription = subscriptions
-    .filter(sub => sub.userId === userId)
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
-
-  return new Response(
-    JSON.stringify({
-      success: true,
-      subscription: subscription || null,
-    }),
-    { status: 200, headers }
-  );
+  });
 } 

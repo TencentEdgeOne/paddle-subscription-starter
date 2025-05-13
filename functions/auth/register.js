@@ -1,9 +1,4 @@
-import jwt from 'jsonwebtoken';
-
-// Mock user database - in a real application this would be a database
-const users = [
-  { id: '1', email: 'user@example.com', password: 'password123', name: 'Test User' }
-];
+import { createSupabaseClient } from '../lib/supabase.js';
 
 export function onRequest(context) {
   // Set CORS headers (development mode)
@@ -31,7 +26,7 @@ export function onRequest(context) {
   }
 
   return context.request.json()
-    .then((data) => {
+    .then(async (data) => {
       const { name, email, password } = data;
 
       if (!name || !email || !password) {
@@ -41,43 +36,57 @@ export function onRequest(context) {
         );
       }
 
-      // Check if email already exists
-      if (users.some(user => user.email === email)) {
+      try {
+        // Initialize Supabase client
+        const supabase = createSupabaseClient(context);
+        
+        // Register user with Supabase
+        const { data: authData, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              full_name: name
+            }
+          }
+        });
+
+        if (error) {
+          return new Response(
+            JSON.stringify({ success: false, message: error.message }),
+            { status: 400, headers }
+          );
+        }
+
+        // Check if email confirmation is required
+        const message = authData.session 
+          ? 'Registration successful' 
+          : 'Registration successful. Please check your email to confirm your account.';
+
         return new Response(
-          JSON.stringify({ success: false, message: 'Email is already registered' }),
-          { status: 409, headers }
+          JSON.stringify({ 
+            success: true, 
+            message,
+            token: authData.session?.access_token,
+            user: {
+              id: authData.user.id,
+              email: authData.user.email,
+              name: authData.user.user_metadata?.full_name
+            },
+            requiresEmailConfirmation: !authData.session
+          }),
+          { status: 201, headers }
+        );
+      } catch (error) {
+        console.error('Registration error:', error);
+        return new Response(
+          JSON.stringify({ success: false, message: error.message || 'Server error' }),
+          { status: 500, headers }
         );
       }
-
-      // Create a new user
-      const newUser = {
-        id: String(users.length + 1),
-        name,
-        email,
-        password,
-      };
-
-      // In a real application, we would add the user to a database
-      users.push(newUser);
-
-      // Create JWT token
-      const token = jwt.sign(
-        { id: newUser.id, email: newUser.email, name: newUser.name },
-        context.env.JWT_SECRET || 'your_jwt_secret_key_here',
-        { expiresIn: '24h' }
-      );
-
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: 'Registration successful',
-          token,
-          user: { id: newUser.id, email: newUser.email, name: newUser.name }
-        }),
-        { status: 201, headers }
-      );
     })
     .catch((error) => {
+      console.error('Request processing error:', error);
       return new Response(
         JSON.stringify({ success: false, message: error.message || 'Server error' }),
         { status: 500, headers }

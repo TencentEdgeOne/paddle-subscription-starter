@@ -16,19 +16,21 @@ export function AuthForm({ type }: AuthFormProps) {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [emailSent, setEmailSent] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setEmailSent(false);
 
     try {
       const endpoint = type === "login" ? "/auth/login" : "/auth/register";
       const body = type === "login" 
         ? { email, password } 
         : { name, email, password };
-
-      const response = await fetch(process.env.DEV ? `${process.env.VITE_API_URL_DEV}${endpoint}` : endpoint, {
+      console.log("????", process.env);
+      const response = await fetch(process.env.NEXT_PUBLIC_DEV ? `${process.env.NEXT_PUBLIC_API_URL_DEV}${endpoint}` : endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -42,17 +44,45 @@ export function AuthForm({ type }: AuthFormProps) {
         throw new Error(data.message || "Authentication failed");
       }
 
+      // Handle email confirmation requirement
+      if (data.requiresEmailConfirmation) {
+        setEmailSent(true);
+        return;
+      }
+
       // Save authentication token to localStorage
-      localStorage.setItem("token", data.token);
-      
-      // Redirect to dashboard
-      window.location.href = "/dashboard";
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        
+        // Redirect to dashboard
+        window.location.href = "/dashboard";
+      } else {
+        setError("No authentication token received");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error during authentication");
     } finally {
       setLoading(false);
     }
   };
+
+  if (emailSent) {
+    return (
+      <Card className="w-full max-w-md mx-auto">
+        <CardHeader>
+          <CardTitle>Check your email</CardTitle>
+          <CardDescription>
+            We've sent a confirmation email to {email}. Please check your inbox and follow the instructions to confirm your account.
+          </CardDescription>
+        </CardHeader>
+        <CardFooter className="flex justify-center">
+          <Button asChild variant="outline">
+            <a href="/login">Back to login</a>
+          </Button>
+        </CardFooter>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -95,7 +125,11 @@ export function AuthForm({ type }: AuthFormProps) {
               value={password} 
               onChange={(e) => setPassword(e.target.value)} 
               required 
+              minLength={6}
             />
+            {type === "register" && (
+              <p className="text-xs text-gray-500 mt-1">Password must be at least 6 characters</p>
+            )}
           </div>
           {error && <p className="text-red-500 text-sm">{error}</p>}
           <Button type="submit" className="w-full" disabled={loading}>

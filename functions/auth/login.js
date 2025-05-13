@@ -1,9 +1,4 @@
-import jwt from 'jsonwebtoken';
-
-// Mock user database
-const users = [
-  { id: '1', email: 'user@example.com', password: 'password123', name: 'Test User' }
-];
+import { createSupabaseClient } from '../lib/supabase.js';
 
 export function onRequest(context) {
   // Set CORS headers (development mode)
@@ -31,7 +26,7 @@ export function onRequest(context) {
   }
 
   return context.request.json()
-    .then((data) => {
+    .then(async (data) => {
       const { email, password } = data;
 
       if (!email || !password) {
@@ -41,34 +36,46 @@ export function onRequest(context) {
         );
       }
 
-      // Find user
-      const user = users.find(u => u.email === email && u.password === password);
+      try {
+        // Initialize Supabase client
+        const supabase = createSupabaseClient(context);
+        
+        // Authenticate user with Supabase
+        const { data: authData, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
 
-      if (!user) {
+        if (error) {
+          return new Response(
+            JSON.stringify({ success: false, message: error.message }),
+            { status: 401, headers }
+          );
+        }
+
         return new Response(
-          JSON.stringify({ success: false, message: 'Invalid email or password' }),
-          { status: 401, headers }
+          JSON.stringify({ 
+            success: true, 
+            message: 'Login successful',
+            token: authData.session.access_token,
+            user: {
+              id: authData.user.id,
+              email: authData.user.email,
+              name: authData.user.user_metadata?.full_name || email.split('@')[0]
+            }
+          }),
+          { status: 200, headers }
+        );
+      } catch (error) {
+        console.error('Login error:', error);
+        return new Response(
+          JSON.stringify({ success: false, message: error.message || 'Server error' }),
+          { status: 500, headers }
         );
       }
-
-      // Create JWT token
-      const token = jwt.sign(
-        { id: user.id, email: user.email, name: user.name },
-        context.env.JWT_SECRET || 'your_jwt_secret_key_here',
-        { expiresIn: '24h' }
-      );
-
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: 'Login successful',
-          token,
-          user: { id: user.id, email: user.email, name: user.name }
-        }),
-        { status: 200, headers }
-      );
     })
     .catch((error) => {
+      console.error('Request processing error:', error);
       return new Response(
         JSON.stringify({ success: false, message: error.message || 'Server error' }),
         { status: 500, headers }
