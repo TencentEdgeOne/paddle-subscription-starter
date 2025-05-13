@@ -1,16 +1,17 @@
-import { CheckoutOpenOptions} from "@paddle/paddle-js";
 
 /**
  * Paddle global object type definition
  */
-interface PaddleGlobal {
+interface Paddle {
   Checkout: {
     open: (options: PaddleCheckoutOptions) => void;
   };
   Environment: {
     set: (environment: 'production' | 'sandbox') => void;
   };
-  Initialize: (options: Partial<PaddleCheckoutOptions>) => void;
+  Initialize: (options: {
+    token: string;
+  }) => void;
 }
 
 /**
@@ -18,7 +19,7 @@ interface PaddleGlobal {
  */
 declare global {
   interface Window {
-    Paddle?: PaddleGlobal;
+    Paddle?: Paddle;
   }
 }
 
@@ -177,25 +178,3 @@ export const getPrices = async () => {
   }
 };
 
-/**
- * Initialize Paddle
- * @param environment - Environment setting (production or sandbox)
- * @param options - Initialization options
- */
-export const initializePaddle = (
-  environment: 'production' | 'sandbox' = 'sandbox',
-  options?: Partial<PaddleCheckoutOptions>
-): void => {
-  if (typeof window === 'undefined' || !window.Paddle) {
-    console.warn('Paddle not loaded in global scope');
-    return;
-  }
-  
-  // Set environment
-  window.Paddle.Environment.set(environment);
-  
-  // Set default options
-  if (options) {
-    window.Paddle.Initialize(options);
-  }
-};
