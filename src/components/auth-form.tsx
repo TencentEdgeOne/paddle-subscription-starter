@@ -73,7 +73,7 @@ export function AuthForm({ type }: AuthFormProps) {
         <CardHeader>
           <CardTitle>Check your email</CardTitle>
           <CardDescription>
-            We've sent a confirmation email to {email}. Please check your inbox and follow the instructions to confirm your account.
+            We&apos;ve sent a confirmation email to {email}. Please check your inbox and follow the instructions to confirm your account.
           </CardDescription>
         </CardHeader>
         <CardFooter className="flex justify-center">

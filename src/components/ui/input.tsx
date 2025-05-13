@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils"
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   // 此处可以添加额外属性，但我们当前不需要
+  id?: string;
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(

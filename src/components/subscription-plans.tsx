@@ -95,11 +95,12 @@ export function SubscriptionPlans() {
             className={`flex flex-col ${isPopular ? "border-blue-500 shadow-lg" : ""}`}
           >
             <CardHeader>
-              {isPopular && (
+              {isPopular ? (
                 <div className="py-1 px-3 bg-blue-500 text-white text-xs rounded-full w-fit mb-2">
                   Most Popular
                 </div>
-              )}
+              ) : <div className="h-8">
+                </div>}
               <CardTitle>{plan.name}</CardTitle>
               <div className="flex items-baseline mt-2">
                 <span className="text-3xl font-bold">
