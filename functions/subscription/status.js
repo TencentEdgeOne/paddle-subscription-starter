@@ -42,7 +42,6 @@ export async function onRequest(context) {
     
     // 验证用户令牌并获取用户信息
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    console.log("user", user);
     
     if (authError || !user) {
       return new Response(
@@ -79,7 +78,7 @@ export async function onRequest(context) {
       .from('subscriptions')
       .select('*')
       .eq('customer_id', customer.customer_id)
-      // .in('subscription_status', ['active', 'trialing'])
+      .in('subscription_status', ['active', 'trialing'])
       .order('created_at', { ascending: false })
       .limit(1)
       .single();

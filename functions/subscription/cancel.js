@@ -1,3 +1,4 @@
+import { callPaddleApi } from '../lib/paddle-utils.js';
 import { createSupabaseAdminClient } from '../lib/supabase.js';
 
 export async function onRequest(context) {
@@ -82,6 +83,7 @@ export async function onRequest(context) {
       .limit(1)
       .single();
     
+    console.log('待删除的 subscription', subscription);
     if (subscriptionError) {
       console.error('获取订阅时出错:', subscriptionError);
       return new Response(
@@ -99,10 +101,14 @@ export async function onRequest(context) {
     
 
     try {
-     
-      const paddleResponse = await callPaddleApi(context, `/subscriptions/${subscription.subscription_id}/cancel`, 'PATCH');
+      // cancel the scheduled subscription fist
+      await callPaddleApi(context, `/subscriptions/${subscription.subscription_id}`, 'PATCH', { scheduled_change: null});
+      // cancel the scheduled subscription
+      const paddleResponse = await callPaddleApi(context, `/subscriptions/${subscription.subscription_id}/cancel`, 'POST', {
+        effective_from: 'immediately'
+      });
       
-      
+      console.log('paddleResponse', paddleResponse);
       if (!paddleResponse.ok) {
         throw new Error('取消Paddle订阅失败');
       }

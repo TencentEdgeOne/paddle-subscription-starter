@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { initPaddle, openCheckout } from "@/lib/paddle";
 import { getToken, getCurrentUser } from "@/lib/auth";
+import { checkSubscriptionStatus } from "@/lib/subscription";
 
 interface PlanPrice {
   id: string;
@@ -63,12 +64,16 @@ export function SubscriptionPlans() {
         return;
       }
       const user = await getCurrentUser();
-      if (user?.email) {
-        // Open Paddle checkout
-        openCheckout(priceId, user.email || undefined);
+      // Check if user already has a subscription
+      const isSubscribed = await checkSubscriptionStatus();
+      if (isSubscribed) {
+        window.location.href = "/dashboard";
+      } else {
+        if (user?.email) {
+          // Open Paddle checkout
+          openCheckout(priceId, user.email);
+        }
       }
-    
-      
     } catch (error) {
       console.error("Error starting checkout:", error);
       alert("Failed to start checkout process. Please try again.");
