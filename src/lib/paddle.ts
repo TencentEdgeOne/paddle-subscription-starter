@@ -14,14 +14,21 @@ export const initPaddle = async (): Promise<void> => {
 
   script.onload = () => {
     // Initialize Paddle
-    console.log(
-      "process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN",
-      process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN
-    );
+    // console.log(
+    //   "process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN",
+    //   process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN
+    // );
     window.Paddle?.Environment.set(
       process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT === "production"
         ? "production"
         : "sandbox"
+    );
+    console.log(
+      "process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN",
+      process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN,
+      "process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT",
+      process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT,
+      window.Paddle
     );
     window.Paddle?.Initialize({
       token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN!,

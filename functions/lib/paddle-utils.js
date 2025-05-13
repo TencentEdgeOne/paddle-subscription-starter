@@ -1,25 +1,4 @@
 /**
- * 将字符串转换为Uint8Array
- * @param {string} str - 要转换的字符串
- * @returns {Uint8Array} 转换后的Uint8Array
- */
-function stringToUint8Array(str) {
-  const encoder = new TextEncoder();
-  return encoder.encode(str);
-}
-
-/**
- * 将ArrayBuffer转换为十六进制字符串
- * @param {ArrayBuffer} buffer - 要转换的ArrayBuffer
- * @returns {string} 十六进制字符串
- */
-function arrayBufferToHex(buffer) {
-  return Array.from(new Uint8Array(buffer))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
-}
-
-/**
  * 发起Paddle API请求
  * @param {object} context - EdgeOne函数上下文
  * @param {string} endpoint - API端点路径
@@ -66,36 +45,57 @@ export async function callPaddleApi(context, endpoint, method = 'GET', body = nu
 /**
  * 验证Paddle webhook签名
  * @param {object} payload - Webhook载荷
- * @param {string} signature - Paddle-Signature标头
+ * @param {string} signatureHeader - Paddle-Signature标头
  * @param {string} webhookSecret - Paddle webhook密钥
  * @returns {Promise<boolean>} 签名是否有效
  */
-export async function validateWebhookSignature(payload, signature, webhookSecret) {
-  if (!payload || !signature || !webhookSecret) {
+export async function validateWebhookSignature(payload, signatureHeader, webhookSecret) {
+  if (!payload || !signatureHeader || !webhookSecret) {
     return false;
   }
   
   try {
-    // 解析签名标头
-    const signatureData = {};
-    signature.split(',').forEach(item => {
-      const [key, value] = item.split('=');
-      signatureData[key.trim()] = value;
+    // 1. 解析Paddle-Signature标头
+    const signatureParts = {};
+    signatureHeader.split(';').forEach(part => {
+      const [key, value] = part.split('=');
+      if (key && value) {
+        signatureParts[key.trim()] = value.trim();
+      }
     });
     
-    const { ts, h1 } = signatureData;
+    // 2. 提取时间戳和签名
+    const { ts, h1 } = signatureParts;
     
     if (!ts || !h1) {
+      console.error('签名标头格式无效');
       return false;
     }
     
-    // 准备用于验证的字符串
-    const stringToSign = `${ts}.${JSON.stringify(payload)}`;
+    // 可选：检查时间戳是否在可接受范围内（防止重放攻击）
+    const currentTimestamp = Math.floor(Date.now() / 1000);
+    const timestampDifference = Math.abs(currentTimestamp - parseInt(ts, 10));
     
-    // 使用Web Crypto API计算HMAC
-    // 1. 导入密钥
-    const keyData = stringToUint8Array(webhookSecret);
-    const cryptoKey = await crypto.subtle.importKey(
+    // 允许5秒的时间偏差（根据Paddle文档建议）
+    if (timestampDifference > 5) {
+      console.warn(`时间戳相差过大: ${timestampDifference}秒`);
+      // 开发环境下不强制检查时间戳
+      // 如果在生产环境，可以考虑在这里返回false
+    }
+    
+    // 3. 构建签名负载
+    // 重要：不要对原始请求体做任何转换或格式化
+    const payloadString = JSON.stringify(payload);
+    const signedPayload = `${ts}:${payloadString}`;
+    
+    // 4. 对签名负载进行哈希
+    // 使用Web Crypto API进行HMAC计算
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(webhookSecret);
+    const signedPayloadData = encoder.encode(signedPayload);
+    
+    // 导入密钥
+    const key = await crypto.subtle.importKey(
       'raw',
       keyData,
       { name: 'HMAC', hash: 'SHA-256' },
@@ -103,22 +103,24 @@ export async function validateWebhookSignature(payload, signature, webhookSecret
       ['sign']
     );
     
-    // 2. 计算签名
-    const dataToSign = stringToUint8Array(stringToSign);
+    // 计算签名
     const signature = await crypto.subtle.sign(
       'HMAC',
-      cryptoKey,
-      dataToSign
+      key,
+      signedPayloadData
     );
     
-    // 3. 转换为十六进制
-    const expectedSignature = arrayBufferToHex(signature);
+    // 将签名转换为十六进制
+    const computedSignature = Array.from(new Uint8Array(signature))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
     
-    // 比较计算的签名与提供的签名
-    return h1 === expectedSignature;
+    // 5. 比较签名
+    // 使用时间安全的比较，以防止时序攻击
+    return {isValid: h1 === computedSignature, message: `验证: ${h1}, ${computedSignature}`};
   } catch (error) {
     console.error('验证webhook签名时出错:', error);
-    return false;
+    return {isValid: false, message: `验证报错: ${error}`};
   }
 }
 

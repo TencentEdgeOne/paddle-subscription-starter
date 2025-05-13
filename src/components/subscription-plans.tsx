@@ -55,7 +55,6 @@ export function SubscriptionPlans() {
   
   const handleSubscribe = async (priceId: string) => {
     setLoading(priceId);
-    initPaddle();
     try {
       // Check if user is logged in
       const token = getToken();
