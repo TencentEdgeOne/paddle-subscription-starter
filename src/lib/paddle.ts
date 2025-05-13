@@ -1,5 +1,5 @@
-import { CheckoutOpenOptions, initializePaddle, Paddle } from "@paddle/paddle-js";
-let paddle: Paddle | undefined;
+import { CheckoutOpenOptions} from "@paddle/paddle-js";
+
 /**
  * Initializes Paddle on the client side
  * This function should be called after the page loads
@@ -13,7 +13,7 @@ export const initPaddle = async (): Promise<void> => {
     "process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN",
     process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN
   );
-  paddle = await initializePaddle({
+  window.Paddle?.Initialize({
     token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN!,
   });
   
@@ -23,7 +23,7 @@ export const initPaddle = async (): Promise<void> => {
  * Opens Paddle checkout with the provided price ID
  */
 export const openCheckout = (priceId: string, email?: string): void => {
-  if (typeof window === "undefined" || !paddle) {
+  if (typeof window === "undefined" || !window.Paddle) {
     console.error("Paddle is not initialized");
     return;
   }
@@ -41,7 +41,7 @@ export const openCheckout = (priceId: string, email?: string): void => {
   };
 
   // Open checkout
-  paddle.Checkout.open(checkoutOptions);
+  window.Paddle.Checkout.open(checkoutOptions);
 };
 
 /**
@@ -50,7 +50,7 @@ export const openCheckout = (priceId: string, email?: string): void => {
 export const getPrices = async () => {
   try {
     const response = await fetch(
-      process.env.NEXT_PUBLIC_DEV ? `${process.env.NEXT_PUBLIC_API_URL_DEV}/paddle/prices` : `/paddle/prices`
+      process.env.NEXT_PUBLIC_DEV ? `${process.env.NEXT_PUBLIC_API_URL_DEV}/paddle/prices` : `${process.env.NEXT_PUBLIC_API_URL}/paddle/prices`
     );
     if (!response.ok) {
       throw new Error("Failed to fetch prices");
