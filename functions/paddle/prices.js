@@ -1,10 +1,10 @@
 import { callPaddleApi, getProductDetails } from '../lib/paddle-utils.js';
 
 /**
- * 端点获取Paddle价格信息
+ * Endpoint to get Paddle price information
  */
 export async function onRequest(context) {
-  // 设置CORS头（开发模式）
+  // Set CORS headers (development mode)
   const headers = {
     'Content-Type': 'application/json',
   };
@@ -15,36 +15,36 @@ export async function onRequest(context) {
     headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization';
   }
 
-  // 处理预检请求
+  // Handle preflight requests
   if (context.request.method === 'OPTIONS') {
     return new Response(null, { headers });
   }
 
-  // 只允许GET请求
+  // Only allow GET requests
   if (context.request.method !== 'GET') {
     return new Response(
-      JSON.stringify({ success: false, message: '方法不允许' }),
+      JSON.stringify({ success: false, message: 'Method not allowed' }),
       { status: 405, headers }
     );
   }
 
   try {
-    // 使用工具函数调用Paddle API获取价格
+    // Use utility function to call Paddle API for prices
     const priceData = await callPaddleApi(context, `/prices?order_by=unit_price.amount[ASC]`, 'GET');
     
-    // 提取产品ID
+    // Extract product IDs
     const productIds = priceData.data.map(price => price.product_id);
     
-    // 获取产品详情
+    // Get product details
     const products = await getProductDetails(context, productIds);
     
-    // 创建产品ID到产品详情的映射
+    // Create a mapping from product ID to product details
     const productMap = {};
     products.forEach(product => {
       productMap[product.id] = product;
     });
     
-    // 合并价格和产品信息
+    // Merge price and product information
     const formattedPrices = priceData.data.map(price => {
       const product = productMap[price.product_id] || {};
       
@@ -66,22 +66,23 @@ export async function onRequest(context) {
       };
     });
 
-    // 返回价格信息
+    // Return price information
     return new Response(
       JSON.stringify({ success: true, prices: formattedPrices }),
       { status: 200, headers }
     );
 
   } catch (error) {
-    console.error('获取价格时出错:', error);
+    console.error('Error getting prices:', error);
 
-    // 如果API调用失败，使用默认硬编码数据作为备用
+    // If API call fails, use default hardcoded data as fallback
     const fallbackPrices = [
       {
         id: 'pri_01h9ztd4j58jrvwhbpdv99qpgq',
         product_id: 'pro_01h9zt8gkce7c0wh503qjjm87g',
         name: 'Basic Plan',
         description: 'Basic features for individual users',
+        features: ['Core functionality', 'Single user', 'Basic storage', 'Standard support'],
         unit_price: {
           amount: '4900',
           currency_code: 'USD'
@@ -96,6 +97,7 @@ export async function onRequest(context) {
         product_id: 'pro_01h9zt9j6wq7f9k68patsgxttm',
         name: 'Professional Plan',
         description: 'Enhanced features for small teams',
+        features: ['All basic features', 'Up to 5 users', 'Enhanced storage', 'Priority support', 'Advanced analytics'],
         unit_price: {
           amount: '9900',
           currency_code: 'USD'
@@ -110,6 +112,7 @@ export async function onRequest(context) {
         product_id: 'pro_01h9ztadhd2g4bvmfcj2t63dzk',
         name: 'Enterprise Plan',
         description: 'Complete suite for large organizations',
+        features: ['All Professional features', 'Unlimited users', 'Enterprise-grade storage', '24/7 dedicated support', 'Custom integrations', 'Dedicated servers'],
         unit_price: {
           amount: '19900',
           currency_code: 'USD'
@@ -121,12 +124,12 @@ export async function onRequest(context) {
       }
     ];
 
-    console.log('使用备用价格数据');
+    console.log('Using fallback price data');
     return new Response(
       JSON.stringify({ 
         success: true, 
         prices: fallbackPrices,
-        note: '使用备用数据，因为API调用失败'
+        note: 'Using backup data because API call failed'
       }),
       { status: 200, headers }
     );

@@ -1,6 +1,84 @@
 import { CheckoutOpenOptions} from "@paddle/paddle-js";
 
 /**
+ * Paddle global object type definition
+ */
+interface PaddleGlobal {
+  Checkout: {
+    open: (options: PaddleCheckoutOptions) => void;
+  };
+  Environment: {
+    set: (environment: 'production' | 'sandbox') => void;
+  };
+  Initialize: (options: Partial<PaddleCheckoutOptions>) => void;
+}
+
+/**
+ * Extend Window interface, add Paddle property
+ */
+declare global {
+  interface Window {
+    Paddle?: PaddleGlobal;
+  }
+}
+
+/**
+ * Paddle checkout options type definition
+ */
+export interface PaddleCheckoutOptions {
+  // Settings object
+  settings?: {
+    displayMode?: 'overlay' | 'inline'; // Display mode
+    theme?: 'light' | 'dark'; // Theme
+    locale?: string; // Language
+    frameInitialHeight?: string; // iframe initial height
+    frameStyle?: string; // iframe style
+    frameTarget?: string; // iframe target container
+    variant?: 'multi-page' | 'one-page'; // Checkout experience variant
+    allowLogout?: boolean; // Whether to allow changing email
+    allowDiscountRemoval?: boolean; // Whether to allow removing discounts
+    showAddDiscounts?: boolean; // Whether to show add discount option
+    showAddTaxId?: boolean; // Whether to show add tax ID option
+    successUrl?: string; // Success redirect URL
+  };
+  // Customer information
+  customer?: {
+    id?: string; // Paddle customer ID
+    email?: string; // Customer email
+  };
+  // Address information
+  address?: {
+    countryCode?: string; // Country code
+    postalCode?: string; // Postal code
+    region?: string; // Region/state/province
+    city?: string; // City
+    lineOne?: string; // Address line 1
+    lineTwo?: string; // Address line 2
+  };
+  // Business information
+  business?: {
+    name?: string; // Business name
+    taxIdentifier?: string; // Tax ID
+  };
+  // Items list
+  items?: Array<{
+    priceId: string; // Price ID
+    quantity: number; // Quantity
+  }>;
+  // Transaction ID (choose either this or items)
+  transactionId?: string;
+  // Discount code or ID
+  discountCode?: string;
+  discountId?: string;
+  // Custom data
+  customData?: Record<string, unknown>;
+  // Saved payment method ID
+  savedPaymentMethodId?: string;
+  // Customer authentication token
+  customerAuthToken?: string;
+}
+
+/**
  * Initializes Paddle on the client side
  * This function should be called after the page loads
  */
@@ -40,26 +118,45 @@ export const initPaddle = async (): Promise<void> => {
 /**
  * Opens Paddle checkout with the provided price ID
  */
-export const openCheckout = (priceId: string, email?: string): void => {
-  if (typeof window === "undefined" || !window.Paddle) {
-    console.error("Paddle is not initialized");
+export const openCheckout = (
+  options: PaddleCheckoutOptions | string,
+  email?: string
+): void => {
+  if (typeof window === 'undefined' || !window.Paddle) {
+    console.error('Paddle not initialized');
     return;
   }
-
-  const checkoutOptions: CheckoutOpenOptions = {
-    customer: {
-      email: email as string,
-    },
-    items: [
-      {
-        priceId: priceId,
-        quantity: 1,
-      },
-    ],
-  };
-
+  
+  let checkoutOptions: PaddleCheckoutOptions;
+  
+  // Compatible with old API call style
+  if (typeof options === 'string') {
+    checkoutOptions = {
+      items: [
+        {
+          priceId: options,
+          quantity: 1
+        }
+      ]
+    };
+    
+    if (email) {
+      checkoutOptions.customer = { email };
+    }
+  } else {
+    checkoutOptions = options;
+  }
+  
+  // Set defaults
+  if (!checkoutOptions.settings) {
+    checkoutOptions.settings = {
+      displayMode: 'overlay',
+      theme: 'light'
+    };
+  }
+  
   // Open checkout
-  window.Paddle.Checkout.open(checkoutOptions);
+  window.Paddle?.Checkout.open(checkoutOptions);
 };
 
 /**
@@ -77,5 +174,28 @@ export const getPrices = async () => {
   } catch (error) {
     console.error("Error fetching Paddle prices:", error);
     return [];
+  }
+};
+
+/**
+ * Initialize Paddle
+ * @param environment - Environment setting (production or sandbox)
+ * @param options - Initialization options
+ */
+export const initializePaddle = (
+  environment: 'production' | 'sandbox' = 'sandbox',
+  options?: Partial<PaddleCheckoutOptions>
+): void => {
+  if (typeof window === 'undefined' || !window.Paddle) {
+    console.warn('Paddle not loaded in global scope');
+    return;
+  }
+  
+  // Set environment
+  window.Paddle.Environment.set(environment);
+  
+  // Set default options
+  if (options) {
+    window.Paddle.Initialize(options);
   }
 };

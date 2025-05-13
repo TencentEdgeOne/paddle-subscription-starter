@@ -1,9 +1,9 @@
 import { createSupabaseAdminClient } from '../lib/supabase.js';
 import { validateWebhookSignature, handleCustomerCreation, handleSubscriptionChange } from '../lib/paddle-utils.js';
 
-// Webhook处理函数
+// Webhook handler function
 export async function onRequest(context) {
-  // 设置CORS头（开发模式）
+  // Set CORS headers (development mode)
   const headers = {
     'Content-Type': 'application/json',
   };
@@ -14,70 +14,70 @@ export async function onRequest(context) {
     headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, Paddle-Signature';
   }
 
-  // 处理预检请求
+  // Handle preflight requests
   if (context.request.method === 'OPTIONS') {
     return new Response(null, { headers });
   }
 
-  // 只允许POST请求
+  // Only allow POST requests
   if (context.request.method !== 'POST') {
     return new Response(
-      JSON.stringify({ success: false, message: '方法不允许' }),
+      JSON.stringify({ success: false, message: 'Method not allowed' }),
       { status: 405, headers }
     );
   }
 
   try {
-    // 1. 获取原始请求体 - 重要：不要对请求体做任何处理
+    // 1. Get raw request body - important: don't process the request body
     const rawBody = await context.request.text();
     let payload;
     
     try {
-      // 解析JSON载荷
+      // Parse JSON payload
       payload = JSON.parse(rawBody);
-      console.log('收到Paddle webhook:', JSON.stringify(payload));
+      console.log('Received Paddle webhook:', JSON.stringify(payload));
     } catch (error) {
-      console.error('解析webhook载荷失败:', error);
+      console.error('Failed to parse webhook payload:', error);
       return new Response(
-        JSON.stringify({ success: false, message: '无效的JSON载荷' }),
+        JSON.stringify({ success: false, message: 'Invalid JSON payload' }),
         { status: 400, headers }
       );
     }
 
-    // 2. 获取Paddle-Signature头
+    // 2. Get Paddle-Signature header
     const signatureHeader = context.request.headers.get('Paddle-Signature');
     const webhookSecret = context.env.PADDLE_WEBHOOK_SECRET;
     
-    // 3. 验证签名
+    // 3. Verify signature
     if (webhookSecret && signatureHeader) {
-      // 因为validateWebhookSignature函数需要原始JSON字符串，这里我们需要将payload重新转换回字符串
+      // Since validateWebhookSignature function needs the original JSON string, we need to convert payload back to string
       const { isValid, message } = await validateWebhookSignature(payload, signatureHeader, webhookSecret);
       
       if (!isValid) {
-        console.warn('签名验证失败');
+        console.warn('Signature verification failed');
         return new Response(
-          JSON.stringify({ success: false, message: '无效的签名:' + message }),
+          JSON.stringify({ success: false, message: 'Invalid signature:' + message }),
           { status: 401, headers }
         );
       }
       
-      console.log('签名验证成功');
+      console.log('Signature verification successful');
     } else {
-      // 仅在开发环境中允许未验证的webhook
+      // Only allow unverified webhooks in development environment
       if (context.env.NEXT_PUBLIC_DEV !== 'true') {
-        console.warn('生产环境中缺少webhook密钥或签名');
+        console.warn('Missing webhook secret or signature in production environment');
         return new Response(
-          JSON.stringify({ success: false, message: '请求缺少必要的验证信息' }),
+          JSON.stringify({ success: false, message: 'Request missing required verification information' }),
           { status: 401, headers }
         );
       }
-      console.warn('开发模式：跳过webhook签名验证');
+      console.warn('Development mode: Skipping webhook signature verification');
     }
 
-    // 初始化Supabase客户端
+    // Initialize Supabase client
     const supabase = createSupabaseAdminClient(context);
 
-    // 根据事件类型处理不同事件
+    // Process different events based on event type
     const eventType = payload.event_type;
     const eventData = payload.data;
     
@@ -88,7 +88,7 @@ export async function onRequest(context) {
         break;
         
       case 'subscription.canceled':
-        // 更新订阅状态为已取消
+        // Update subscription status to canceled
         await supabase
           .from('subscriptions')
           .update({
@@ -104,8 +104,8 @@ export async function onRequest(context) {
         break;
         
       default:
-        // 记录但不处理其他事件类型
-        console.log(`忽略事件 ${eventType}`);
+        // Log but don't process other event types
+        console.log(`Ignoring event ${eventType}`);
     }
 
     return new Response(
@@ -113,9 +113,9 @@ export async function onRequest(context) {
       { status: 200, headers }
     );
   } catch (error) {
-    console.error('处理webhook时出错:', error);
+    console.error('Error processing webhook:', error);
     return new Response(
-      JSON.stringify({ success: false, message: error.message || '服务器错误' }),
+      JSON.stringify({ success: false, message: error.message || 'Server error' }),
       { status: 500, headers }
     );
   }

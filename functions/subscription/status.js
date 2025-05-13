@@ -79,7 +79,7 @@ export async function onRequest(context) {
       .from('subscriptions')
       .select('*')
       .eq('customer_id', customer.customer_id)
-      .in('subscription_status', ['active', 'trialing'])
+      // .in('subscription_status', ['active', 'trialing'])
       .order('created_at', { ascending: false })
       .limit(1)
       .single();

@@ -59,6 +59,8 @@ globs: **/*.{ts,tsx,js,jsx,toml,json}
   5. Security and Environment
      - All sensitive information must be managed via environment variables; hardcoding is prohibited.
      - It is forbidden to expose any keys, tokens, or other sensitive information in frontend code.
+  6. Language
+     - Use English as default language when write code and comments.
 
   ## EdgeOne Pages compute
 

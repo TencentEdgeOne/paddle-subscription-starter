@@ -54,7 +54,7 @@ export async function onRequest(context) {
     const { data: customer, error: customerError } = await supabase
       .from('customers')
       .select('customer_id')
-      .eq('user_id', user.id)
+      .eq('email', user.email)
       .single();
     
     if (customerError) {
@@ -97,39 +97,17 @@ export async function onRequest(context) {
       );
     }
     
-    // 在实际实现中，这里会调用Paddle API取消订阅
-    // 注意：实际实现时取消注释下面的代码并使用
+
     try {
-      // 对于演示目的，我们直接更新数据库中的订阅状态
-      // 在实际项目中，应该调用Paddle API取消订阅
-      // const paddleResponse = await fetch(
-      //   `https://${context.env.PADDLE_ENVIRONMENT === 'production' ? 'api' : 'sandbox-api'}.paddle.com/subscriptions/${subscription.subscription_id}`,
-      //   {
-      //     method: 'PATCH',
-      //     headers: {
-      //       'Content-Type': 'application/json',
-      //       'Authorization': `Bearer ${context.env.PADDLE_API_KEY}`
-      //     },
-      //     body: JSON.stringify({ status: 'canceled' })
-      //   }
-      // );
-      // 
-      // if (!paddleResponse.ok) {
-      //   throw new Error('取消Paddle订阅失败');
-      // }
+     
+      const paddleResponse = await callPaddleApi(context, `/subscriptions/${subscription.subscription_id}/cancel`, 'PATCH');
       
-      const { error: updateError } = await supabase
-        .from('subscriptions')
-        .update({
-          subscription_status: 'canceled',
-          updated_at: new Date().toISOString()
-        })
-        .eq('subscription_id', subscription.subscription_id);
       
-      if (updateError) {
-        throw new Error('更新订阅状态失败');
+      if (!paddleResponse.ok) {
+        throw new Error('取消Paddle订阅失败');
       }
       
+    
       return new Response(
         JSON.stringify({
           success: true,
