@@ -1,7 +1,7 @@
 import { createSupabaseAdminClient } from '../lib/supabase.js';
 
 export async function onRequest(context) {
-  // 设置CORS头（开发模式）
+  // Set CORS headers (development mode)
   const headers = {
     'Content-Type': 'application/json',
   };
@@ -12,46 +12,46 @@ export async function onRequest(context) {
     headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization';
   }
 
-  // 处理预检请求
+  // Handle preflight requests
   if (context.request.method === 'OPTIONS') {
     return new Response(null, { headers });
   }
 
-  // 只允许POST请求
+  // Only allow POST requests
   if (context.request.method !== 'POST') {
     return new Response(
-      JSON.stringify({ success: false, message: '方法不允许' }),
+      JSON.stringify({ success: false, message: 'Method not allowed' }),
       { status: 405, headers }
     );
   }
 
   try {
-    // 获取请求中的授权令牌
+    // Get the authorization token from the request
     const authHeader = context.request.headers.get('Authorization');
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.split(' ')[1];
       
-      // 初始化Supabase客户端
+      // Initialize Supabase client
       const supabase = createSupabaseAdminClient(context);
       
-      // 使用Supabase登出
+      // Use Supabase to logout
       await supabase.auth.admin.signOut(token);
     }
     
-    // 即使没有token或登出失败，我们仍然返回成功，因为客户端已经清除了本地token
+    // Even if there's no token or logout fails, we still return success because the client has already cleared the local token
     return new Response(
       JSON.stringify({
         success: true,
-        message: '登出成功'
+        message: 'Logged out successfully'
       }),
       { status: 200, headers }
     );
     
   } catch (error) {
-    console.error('处理登出请求时出错:', error);
-    // 即使出错，我们仍然返回成功，因为客户端已经清除了本地token
+    console.error('Error processing logout request:', error);
+    // Even if an error occurs, we still return success because the client has already cleared the local token
     return new Response(
-      JSON.stringify({ success: true, message: '登出成功' }),
+      JSON.stringify({ success: true, message: 'Logged out successfully' }),
       { status: 200, headers }
     );
   }

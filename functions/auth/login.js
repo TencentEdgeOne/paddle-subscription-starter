@@ -1,7 +1,7 @@
 import { createSupabaseAdminClient } from '../lib/supabase.js';
 
 export async function onRequest(context) {
-  // 设置CORS头（开发模式）
+  // Set CORS headers (development mode)
   const headers = {
     'Content-Type': 'application/json',
   };
@@ -12,49 +12,49 @@ export async function onRequest(context) {
     headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization';
   }
 
-  // 处理预检请求
+  // Handle preflight requests
   if (context.request.method === 'OPTIONS') {
     return new Response(null, { headers });
   }
 
-  // 只允许POST请求
+  // Only allow POST requests
   if (context.request.method !== 'POST') {
     return new Response(
-      JSON.stringify({ success: false, message: '方法不允许' }),
+      JSON.stringify({ success: false, message: 'Method not allowed' }),
       { status: 405, headers }
     );
   }
 
   try {
-    // 解析请求体
+    // Parse request body
     const reqBody = await context.request.json();
     const { email, password } = reqBody;
 
     if (!email || !password) {
       return new Response(
-        JSON.stringify({ success: false, message: '请提供电子邮件和密码' }),
+        JSON.stringify({ success: false, message: 'Please provide email and password' }),
         { status: 400, headers }
       );
     }
 
-    // 初始化Supabase客户端
+    // Initialize Supabase client
     const supabase = createSupabaseAdminClient(context);
 
-    // 使用Supabase登录
+    // Use Supabase to login
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
-      console.error('登录失败:', error);
+      console.error('Login failed:', error);
       return new Response(
-        JSON.stringify({ success: false, message: error.message || '登录失败' }),
+        JSON.stringify({ success: false, message: error.message || 'Login failed' }),
         { status: 401, headers }
       );
     }
 
-    // 成功登录，返回令牌和用户数据
+    // Successfully logged in, return token and user data
     return new Response(
       JSON.stringify({
         success: true,
@@ -68,9 +68,9 @@ export async function onRequest(context) {
       { status: 200, headers }
     );
   } catch (error) {
-    console.error('处理登录请求时出错:', error);
+    console.error('Error processing login request:', error);
     return new Response(
-      JSON.stringify({ success: false, message: error.message || '服务器错误' }),
+      JSON.stringify({ success: false, message: error.message || 'Server error' }),
       { status: 500, headers }
     );
   }

@@ -2,7 +2,7 @@ import { callPaddleApi } from '../lib/paddle-utils.js';
 import { createSupabaseAdminClient } from '../lib/supabase.js';
 
 export async function onRequest(context) {
-  // 设置CORS头（开发模式）
+  // Set CORS headers (development mode)
   const headers = {
     'Content-Type': 'application/json',
   };
@@ -13,45 +13,45 @@ export async function onRequest(context) {
     headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization';
   }
 
-  // 处理预检请求
+  // Handle preflight requests
   if (context.request.method === 'OPTIONS') {
     return new Response(null, { headers });
   }
 
-  // 只允许POST请求
+  // Only allow POST requests
   if (context.request.method !== 'POST') {
     return new Response(
-      JSON.stringify({ success: false, message: '方法不允许' }),
+      JSON.stringify({ success: false, message: 'Method not allowed' }),
       { status: 405, headers }
     );
   }
 
   try {
-    // 获取请求中的授权令牌
+    // Get the authorization token from the request
     const authHeader = context.request.headers.get('Authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return new Response(
-        JSON.stringify({ success: false, message: '未授权' }),
+        JSON.stringify({ success: false, message: 'Unauthorized' }),
         { status: 401, headers }
       );
     }
 
     const token = authHeader.split(' ')[1];
     
-    // 初始化Supabase客户端
+    // Initialize Supabase client
     const supabase = createSupabaseAdminClient(context);
     
-    // 验证用户令牌并获取用户信息
+    // Verify user token and get user information
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     
     if (authError || !user) {
       return new Response(
-        JSON.stringify({ success: false, message: '无效的访问令牌' }),
+        JSON.stringify({ success: false, message: 'Invalid access token' }),
         { status: 401, headers }
       );
     }
     
-    // 获取与用户关联的客户ID
+    // Get the customer ID associated with the user
     const { data: customer, error: customerError } = await supabase
       .from('customers')
       .select('customer_id')
@@ -59,21 +59,21 @@ export async function onRequest(context) {
       .single();
     
     if (customerError) {
-      console.error('获取客户时出错:', customerError);
+      console.error('Error getting customer:', customerError);
       return new Response(
-        JSON.stringify({ success: false, message: '获取客户信息时出错' }),
+        JSON.stringify({ success: false, message: 'Error getting customer information' }),
         { status: 500, headers }
       );
     }
     
     if (!customer) {
       return new Response(
-        JSON.stringify({ success: false, message: '未找到客户记录' }),
+        JSON.stringify({ success: false, message: 'Customer record not found' }),
         { status: 404, headers }
       );
     }
     
-    // 获取用户的活动订阅
+    // Get the user's active subscription
     const { data: subscription, error: subscriptionError } = await supabase
       .from('subscriptions')
       .select('*')
@@ -83,25 +83,25 @@ export async function onRequest(context) {
       .limit(1)
       .single();
     
-    console.log('待删除的 subscription', subscription);
+    console.log('Subscription to be deleted', subscription);
     if (subscriptionError) {
-      console.error('获取订阅时出错:', subscriptionError);
+      console.error('Error getting subscription:', subscriptionError);
       return new Response(
-        JSON.stringify({ success: false, message: '获取订阅信息时出错' }),
+        JSON.stringify({ success: false, message: 'Error getting subscription information' }),
         { status: 500, headers }
       );
     }
     
     if (!subscription) {
       return new Response(
-        JSON.stringify({ success: false, message: '未找到活动订阅' }),
+        JSON.stringify({ success: false, message: 'Active subscription not found' }),
         { status: 404, headers }
       );
     }
     
 
     try {
-      // cancel the scheduled subscription fist
+      // cancel the scheduled subscription first
       await callPaddleApi(context, `/subscriptions/${subscription.subscription_id}`, 'PATCH', { scheduled_change: null});
       // cancel the scheduled subscription
       const paddleResponse = await callPaddleApi(context, `/subscriptions/${subscription.subscription_id}/cancel`, 'POST', {
@@ -110,28 +110,28 @@ export async function onRequest(context) {
       
       console.log('paddleResponse', paddleResponse);
       if (!paddleResponse.ok) {
-        throw new Error('取消Paddle订阅失败');
+        throw new Error('Failed to cancel Paddle subscription');
       }
       
     
       return new Response(
         JSON.stringify({
           success: true,
-          message: '订阅已成功取消'
+          message: 'Subscription successfully cancelled'
         }),
         { status: 200, headers }
       );
     } catch (paddleError) {
-      console.error('Paddle API错误:', paddleError);
+      console.error('Paddle API error:', paddleError);
       return new Response(
-        JSON.stringify({ success: false, message: paddleError.message || '取消订阅时出错' }),
+        JSON.stringify({ success: false, message: paddleError.message || 'Error cancelling subscription' }),
         { status: 500, headers }
       );
     }
   } catch (error) {
-    console.error('处理取消订阅请求时出错:', error);
+    console.error('Error processing cancel subscription request:', error);
     return new Response(
-      JSON.stringify({ success: false, message: error.message || '服务器错误' }),
+      JSON.stringify({ success: false, message: error.message || 'Server error' }),
       { status: 500, headers }
     );
   }

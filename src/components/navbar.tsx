@@ -28,7 +28,7 @@ export function Navbar() {
               href="/"
               className="flex-shrink-0 flex items-center font-bold text-xl"
             >
-              Paddle Subscription Demo
+              Paddle Subscription Starter
             </Link>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
               <Link
