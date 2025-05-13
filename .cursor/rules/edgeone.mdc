@@ -38,6 +38,7 @@ globs: **/*.{ts,tsx,js,jsx,toml,json}
      - Routing follows Next.js file routing conventions.
      - Static assets are placed in the public directory.
      - Next.js min version 15.3.1.
+     - All components that imports "useState" need has `"use client";` at the beginning of the file.
   2. shadcn/ui Component Library
      - Components must be imported from @/components/ui or @/components.
      - Direct modification of components inside node_modules is prohibited; extend via custom components if needed.
