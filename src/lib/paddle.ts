@@ -18,6 +18,11 @@ export const initPaddle = async (): Promise<void> => {
       "process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN",
       process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN
     );
+    window.Paddle?.Environment.set(
+      process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT === "production"
+        ? "production"
+        : "sandbox"
+    );
     window.Paddle?.Initialize({
       token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN!,
     });
