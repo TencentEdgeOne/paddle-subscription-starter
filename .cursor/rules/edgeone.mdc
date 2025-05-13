@@ -34,6 +34,7 @@ globs: **/*.{ts,tsx,js,jsx,toml,json}
   ### Syntax and Project Specifications
   1. Next.js Configuration
      - Only SSG (getStaticProps, getStaticPaths) is allowed; SSR (getServerSideProps) is prohibited.
+       - next.config should add   `output: "export"` to ensure the project is SSG.
      - All pages and components must use TypeScript (.tsx).
      - Routing follows Next.js file routing conventions.
      - Static assets are placed in the public directory.
@@ -67,7 +68,7 @@ globs: **/*.{ts,tsx,js,jsx,toml,json}
 
   ### Edge Functions
   - ALWAYS use the latest format of an edge function structure.
-  - Add CORS headers when in **DEVELOPMENT MODE** (such as Access-Control-Allow-Origin).
+  - Add CORS headers when in **DEVELOPMENT MODE** (such as Access-Control-Allow-Origin, Access-Control-Allow-Origin header should be env.FRONT_END_URL_DEV).
   - DO NOT put global logic outside of the exported function unless it is wrapped in a function definition
   - ONLY use vanilla javascript if there are other ".js" files in the functions directory.
   - ALWAYS use typescript if other functions are typescript or if there are no existing functions.
@@ -80,9 +81,9 @@ globs: **/*.{ts,tsx,js,jsx,toml,json}
   - Edge functions **does not** support Server Side Rendering.
   - Edge functions use Node.js as runtime and should attempt to use built-in methods where possible. See the list of available web APIs to know which built-ins to use.
     - **Module Support**:  
-      - Supports **Node.js built-in modules**,  and **npm packages** (beta).  
-    - **Importing Modules**:  
-      - **Node.js built-in modules**: No prefix (e.g., `import { randomBytes } from "crypto"`).  
+      - Do not supports **Node.js built-in modules**
+      - Supports **npm packages** (beta).  
+    - **Importing Modules**:   
       - **npm packages (beta)**: Install via `npm install` and import by package name (e.g., `import _ from "lodash"`).  
       - Some npm packages with **native binaries** (e.g., Prisma) or **dynamic imports** (e.g., cowsay) may not work.
     - **Usage in Code**:  

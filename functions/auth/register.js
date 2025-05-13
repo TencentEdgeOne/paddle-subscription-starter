@@ -1,95 +1,90 @@
-import { createSupabaseClient } from '../lib/supabase.js';
+import { createSupabaseAdminClient } from '../lib/supabase.js';
 
-export function onRequest(context) {
-  // Set CORS headers (development mode)
+export async function onRequest(context) {
+  // 设置CORS头（开发模式）
   const headers = {
     'Content-Type': 'application/json',
   };
 
-  if (context.env.DEV === 'true') {
+  if (context.env.NEXT_PUBLIC_DEV === 'true') {
     headers['Access-Control-Allow-Origin'] = '*';
     headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS';
     headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization';
   }
 
-  // Handle preflight requests
+  // 处理预检请求
   if (context.request.method === 'OPTIONS') {
     return new Response(null, { headers });
   }
 
-  // Only allow POST requests
+  // 只允许POST请求
   if (context.request.method !== 'POST') {
     return new Response(
-      JSON.stringify({ success: false, message: 'Method not allowed' }),
+      JSON.stringify({ success: false, message: '方法不允许' }),
       { status: 405, headers }
     );
   }
 
-  return context.request.json()
-    .then(async (data) => {
-      const { name, email, password } = data;
+  try {
+    // 解析请求体
+    const reqBody = await context.request.json();
+    const { email, password } = reqBody;
 
-      if (!name || !email || !password) {
-        return new Response(
-          JSON.stringify({ success: false, message: 'Name, email, and password are required' }),
-          { status: 400, headers }
-        );
-      }
-
-      try {
-        // Initialize Supabase client
-        const supabase = createSupabaseClient(context);
-        
-        // Register user with Supabase
-        const { data: authData, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              full_name: name
-            }
-          }
-        });
-
-        if (error) {
-          return new Response(
-            JSON.stringify({ success: false, message: error.message }),
-            { status: 400, headers }
-          );
-        }
-
-        // Check if email confirmation is required
-        const message = authData.session 
-          ? 'Registration successful' 
-          : 'Registration successful. Please check your email to confirm your account.';
-
-        return new Response(
-          JSON.stringify({ 
-            success: true, 
-            message,
-            token: authData.session?.access_token,
-            user: {
-              id: authData.user.id,
-              email: authData.user.email,
-              name: authData.user.user_metadata?.full_name
-            },
-            requiresEmailConfirmation: !authData.session
-          }),
-          { status: 201, headers }
-        );
-      } catch (error) {
-        console.error('Registration error:', error);
-        return new Response(
-          JSON.stringify({ success: false, message: error.message || 'Server error' }),
-          { status: 500, headers }
-        );
-      }
-    })
-    .catch((error) => {
-      console.error('Request processing error:', error);
+    if (!email || !password) {
       return new Response(
-        JSON.stringify({ success: false, message: error.message || 'Server error' }),
-        { status: 500, headers }
+        JSON.stringify({ success: false, message: '请提供电子邮件和密码' }),
+        { status: 400, headers }
       );
+    }
+
+    // 初始化Supabase客户端
+    const supabase = createSupabaseAdminClient(context);
+
+    // 使用Supabase注册
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
     });
+
+    if (error) {
+      console.error('注册失败:', error);
+      return new Response(
+        JSON.stringify({ success: false, message: error.message || '注册失败' }),
+        { status: 400, headers }
+      );
+    }
+
+    // 如果需要验证电子邮件
+    if (data.user && !data.user.email_confirmed_at) {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: '注册成功，请检查您的电子邮件以验证您的账户',
+          requiresEmailVerification: true
+        }),
+        { status: 200, headers }
+      );
+    }
+
+    // 如果不需要验证电子邮件，直接登录
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: '注册成功',
+        token: data.session?.access_token,
+        user: {
+          id: data.user.id,
+          email: data.user.email,
+          email_confirmed_at: data.user.email_confirmed_at,
+        }
+      }),
+      { status: 200, headers }
+    );
+  } catch (error) {
+    console.error('处理注册请求时出错:', error);
+    return new Response(
+      JSON.stringify({ success: false, message: error.message || '服务器错误' }),
+      { status: 500, headers }
+    );
+  }
 } 

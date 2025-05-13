@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { setToken } from "@/lib/auth";
 
 interface AuthFormProps {
   type: "login" | "register";
@@ -52,7 +53,7 @@ export function AuthForm({ type }: AuthFormProps) {
 
       // Save authentication token to localStorage
       if (data.token) {
-        localStorage.setItem("token", data.token);
+        setToken(data.token);
         
         // Redirect to dashboard
         window.location.href = "/dashboard";

@@ -3,29 +3,26 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
-interface Subscription {
-  id: string;
-  plan: string;
-  status: string;
-  nextBillingDate: string;
-  amount: string;
-}
+import { type Subscription } from "@/lib/supabase";
+import { getToken, clearToken } from "@/lib/auth";
 
 export default function DashboardPage() {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
+  const [cancelLoading, setCancelLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchSubscription = async () => {
       try {
-        const token = localStorage.getItem("token");
+        // 获取本地存储的token
+        const token = getToken();
         if (!token) {
           window.location.href = "/login";
           return;
         }
 
+        // 从边缘函数API获取订阅信息
         const response = await fetch(
           process.env.NEXT_PUBLIC_DEV 
             ? `${process.env.NEXT_PUBLIC_API_URL_DEV}/subscription/status` 
@@ -39,17 +36,19 @@ export default function DashboardPage() {
 
         if (!response.ok) {
           if (response.status === 401) {
-            localStorage.removeItem("token");
+            // 访问令牌无效或过期，重定向到登录页面
+            clearToken();
             window.location.href = "/login";
             return;
           }
-          throw new Error("Failed to get subscription information");
+          throw new Error("获取订阅信息失败");
         }
 
         const data = await response.json();
         setSubscription(data.subscription);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Error while getting subscription information");
+        console.error('获取订阅时出错:', err);
+        setError(err instanceof Error ? err.message : "获取订阅信息时出错");
       } finally {
         setLoading(false);
       }
@@ -58,12 +57,18 @@ export default function DashboardPage() {
     fetchSubscription();
   }, []);
 
+  const handleManageSubscription = async () => {
+    // 在实际实现中，这会重定向到Paddle的客户门户
+    // 或你自己的订阅管理页面
+    alert("这在实际实现中会重定向到订阅管理门户。");
+  };
+
   const handleCancelSubscription = async () => {
-    if (!confirm("Are you sure you want to cancel your subscription? This action cannot be undone.")) return;
+    if (!confirm("您确定要取消订阅吗？此操作无法撤销。")) return;
 
     try {
-      setLoading(true);
-      const token = localStorage.getItem("token");
+      setCancelLoading(true);
+      const token = getToken();
       if (!token) {
         window.location.href = "/login";
         return;
@@ -83,87 +88,99 @@ export default function DashboardPage() {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to cancel subscription");
+        throw new Error("取消订阅失败");
       }
 
-      // Refresh page to show updated subscription status
+      // 重新加载页面以显示更新后的订阅状态
       window.location.reload();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error while canceling subscription");
+      console.error('取消订阅时出错:', err);
+      setError(err instanceof Error ? err.message : "取消订阅时出错");
     } finally {
-      setLoading(false);
+      setCancelLoading(false);
     }
   };
 
   if (loading) {
-    return <div className="text-center py-12">Loading...</div>;
+    return <div className="text-center py-12">加载中...</div>;
   }
 
   if (error) {
     return (
       <div className="text-center py-12">
         <p className="text-red-500 mb-4">{error}</p>
-        <Button onClick={() => window.location.reload()}>Retry</Button>
+        <Button onClick={() => window.location.reload()}>重试</Button>
       </div>
     );
   }
 
   return (
     <div className="py-12">
-      <h1 className="text-3xl font-bold mb-8">My Dashboard</h1>
+      <h1 className="text-3xl font-bold mb-8">我的仪表板</h1>
 
       {subscription ? (
         <Card>
           <CardHeader>
-            <CardTitle>Current Subscription</CardTitle>
-            <CardDescription>Your subscription details</CardDescription>
+            <CardTitle>当前订阅</CardTitle>
+            <CardDescription>您的订阅详情</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Plan</p>
-                  <p className="text-lg font-semibold">{subscription.plan}</p>
+                  <p className="text-sm font-medium text-gray-500">套餐</p>
+                  <p className="text-lg font-semibold">{subscription.price_id || '标准套餐'}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Status</p>
+                  <p className="text-sm font-medium text-gray-500">状态</p>
                   <p className="text-lg font-semibold">
-                    {subscription.status === "active" ? (
-                      <span className="text-green-600">Active</span>
+                    {subscription.subscription_status === "active" ? (
+                      <span className="text-green-600">活跃</span>
+                    ) : subscription.subscription_status === "trialing" ? (
+                      <span className="text-blue-600">试用</span>
                     ) : (
-                      <span className="text-red-600">Canceled</span>
+                      <span className="text-red-600">{subscription.subscription_status}</span>
                     )}
                   </p>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Next Billing Date</p>
-                  <p className="text-lg font-semibold">{subscription.nextBillingDate}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Amount</p>
-                  <p className="text-lg font-semibold">{subscription.amount}</p>
-                </div>
-              </div>
-              {subscription.status === "active" && (
+              
+              <div className="mt-4">
                 <Button 
-                  variant="destructive" 
-                  className="mt-4" 
-                  onClick={handleCancelSubscription}
+                  onClick={handleManageSubscription}
                   disabled={loading}
                 >
-                  {loading ? "Processing..." : "Cancel Subscription"}
+                  管理订阅
                 </Button>
-              )}
+                
+                {subscription.subscription_status === 'active' && (
+                  <>
+                    <Button 
+                      variant="outline" 
+                      className="ml-4" 
+                      onClick={() => window.open('https://support.paddle.com', '_blank')}
+                    >
+                      联系支持
+                    </Button>
+                    <Button 
+                      variant="destructive" 
+                      className="ml-4" 
+                      onClick={handleCancelSubscription}
+                      disabled={cancelLoading}
+                    >
+                      {cancelLoading ? "处理中..." : "取消订阅"}
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
       ) : (
         <div className="text-center py-8">
-          <p className="text-xl mb-4">You don't have any active subscriptions</p>
+          <p className="text-xl mb-4">您没有任何活跃的订阅</p>
           <Button asChild>
-            <a href="/pricing">View Subscription Plans</a>
+            <a href="/pricing">查看订阅计划</a>
           </Button>
         </div>
       )}

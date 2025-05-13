@@ -3,18 +3,18 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-
+import { getToken, clearToken } from "@/lib/auth";
 export function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   
   useEffect(() => {
     // Check if user is logged in
-    const token = localStorage.getItem("token");
+    const token = getToken();
     setIsLoggedIn(!!token);
   }, []);
   
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    clearToken();
     setIsLoggedIn(false);
     window.location.href = "/";
   };
