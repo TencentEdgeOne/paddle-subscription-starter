@@ -62,22 +62,6 @@ cd paddle-subscription-demo
 npm install
 ```
 
-3. Create a `.env.local` file in the root directory with the following content:
-
-```
-DEV=true
-VITE_API_URL_DEV=http://localhost:8088/
-FRONT_END_URL_DEV=http://localhost:3000/
-JWT_SECRET=your_jwt_secret_key_here
-
-# Supabase Configuration
-SUPABASE_URL=your_supabase_url
-SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-```
-
-Replace the Supabase values with your actual project credentials.
-
 ### Development
 
 #### Environment Variables

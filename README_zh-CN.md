@@ -62,22 +62,6 @@ cd paddle-subscription-demo
 npm install
 ```
 
-3. 在根目录下创建一个`.env.local`文件，内容如下：
-
-```
-DEV=true
-VITE_API_URL_DEV=http://localhost:8088/
-FRONT_END_URL_DEV=http://localhost:3000/
-JWT_SECRET=your_jwt_secret_key_here
-
-# Supabase 配置
-SUPABASE_URL=your_supabase_url
-SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-```
-
-将Supabase值替换为你的实际项目凭证。
-
 ### 开发
 
 #### 环境变量
