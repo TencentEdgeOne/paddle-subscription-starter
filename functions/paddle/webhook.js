@@ -8,12 +8,6 @@ export async function onRequest(context) {
     'Content-Type': 'application/json',
   };
 
-  if (context.env.NEXT_PUBLIC_DEV === 'true') {
-    headers['Access-Control-Allow-Origin'] = '*';
-    headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS';
-    headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, Paddle-Signature';
-  }
-
   // Handle preflight requests
   if (context.request.method === 'OPTIONS') {
     return new Response(null, { headers });

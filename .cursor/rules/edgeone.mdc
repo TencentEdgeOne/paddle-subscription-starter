@@ -70,7 +70,6 @@ globs: **/*.{ts,tsx,js,jsx,toml,json}
 
   ### Edge Functions
   - ALWAYS use the latest format of an edge function structure.
-  - Add CORS headers when in **DEVELOPMENT MODE** (such as Access-Control-Allow-Origin, Access-Control-Allow-Origin header should be env.FRONT_END_URL_DEV).
   - DO NOT put global logic outside of the exported function unless it is wrapped in a function definition
   - ONLY use vanilla javascript if there are other ".js" files in the functions directory.
   - ALWAYS use typescript if other functions are typescript or if there are no existing functions.
