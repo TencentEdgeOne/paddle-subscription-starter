@@ -1,4 +1,4 @@
-# Paddle Subscription Demo
+# Paddle Subscription Starter
 
 This is a demonstration application showcasing login, registration, and subscription features using EdgeOne Pages and Supabase authentication.
 
