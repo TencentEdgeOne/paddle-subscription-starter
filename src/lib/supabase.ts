@@ -35,22 +35,4 @@ export async function getActiveSubscription(userId: string): Promise<Subscriptio
     .single();
 
   return subscription || null;
-}
-
-export async function getAllUserSubscriptions(userId: string): Promise<Subscription[]> {
-  const { data: customer } = await supabase
-    .from('customers')
-    .select('customer_id')
-    .eq('user_id', userId)
-    .single();
-
-  if (!customer) return [];
-
-  const { data: subscriptions } = await supabase
-    .from('subscriptions')
-    .select('*')
-    .eq('customer_id', customer.customer_id)
-    .order('created_at', { ascending: false });
-
-  return subscriptions || [];
 } 

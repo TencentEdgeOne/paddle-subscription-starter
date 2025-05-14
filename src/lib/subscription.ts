@@ -2,7 +2,6 @@ import { getToken } from "./auth";
 
 /**
  * Check if a user has an active subscription
- * @param email User's email address
  * @returns Promise<boolean> True if user has an active subscription
  */
 export async function checkSubscriptionStatus(): Promise<boolean> {
@@ -13,7 +12,7 @@ export async function checkSubscriptionStatus(): Promise<boolean> {
       return false;
     }
 
-    // Call the subscription status API with the user's email
+    // Call the subscription status API
     const response = await fetch(
       process.env.NEXT_PUBLIC_DEV 
         ? `${process.env.NEXT_PUBLIC_API_URL_DEV}/subscription/status` 

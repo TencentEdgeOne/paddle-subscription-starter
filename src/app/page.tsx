@@ -11,7 +11,7 @@ export default function Home() {
               Paddle Subscription Starter
             </h1>
             <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl">
-              We offer flexible subscription plans to meet your various needs. Sign up now to start enjoying our professional services.
+              This is a demo of Paddle Subscription Starter on EdgeOne Pages. It shows how to create a subscription page with Paddle, Supabase, and EdgeOne Pages.
             </p>
           </div>
           <div className="space-x-4">

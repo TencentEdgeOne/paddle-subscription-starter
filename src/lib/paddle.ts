@@ -1,4 +1,3 @@
-
 /**
  * Paddle global object type definition
  */
@@ -117,7 +116,9 @@ export const initPaddle = async (): Promise<void> => {
 };
 
 /**
- * Opens Paddle checkout with the provided price ID
+ * Open Paddle checkout
+ * @param options - Checkout options or price ID
+ * @param email - Customer email (used when options is a string)
  */
 export const openCheckout = (
   options: PaddleCheckoutOptions | string,

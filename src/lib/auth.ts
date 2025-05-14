@@ -1,16 +1,16 @@
 "use client";
 
-// 用于存储认证令牌的键名
+// Key name for storing authentication token
 const TOKEN_KEY = 'auth_token';
 
-// 存储认证令牌到localStorage
+// Store authentication token in localStorage
 export function setToken(token: string): void {
   if (typeof window !== 'undefined') {
     localStorage.setItem(TOKEN_KEY, token);
   }
 }
 
-// 从localStorage获取认证令牌
+// Get authentication token from localStorage
 export function getToken(): string | null {
   if (typeof window !== 'undefined') {
     return localStorage.getItem(TOKEN_KEY);
@@ -18,56 +18,57 @@ export function getToken(): string | null {
   return null;
 }
 
-// 清除认证令牌
+// Clear authentication token
 export function clearToken(): void {
   if (typeof window !== 'undefined') {
     localStorage.removeItem(TOKEN_KEY);
   }
 }
 
-// 检查用户是否已登录
+// Check if user is logged in
 export function isLoggedIn(): boolean {
   return !!getToken();
 }
 
-// 获取当前用户信息
-export async function getCurrentUser() {
+// Get current user information
+export async function getCurrentUser(): Promise<any> {
   try {
     const token = getToken();
     if (!token) {
-      throw new Error('未登录');
+      throw new Error('Not authenticated');
     }
-
+    
+    // Call the API to get user information
     const response = await fetch(
       process.env.NEXT_PUBLIC_DEV 
-        ? `${process.env.NEXT_PUBLIC_API_URL_DEV}/auth/user` 
-        : "/auth/user",
+        ? `${process.env.NEXT_PUBLIC_API_URL_DEV}/auth/me` 
+        : "/auth/me",
       {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       }
     );
-
+    
     if (!response.ok) {
       if (response.status === 401) {
-        // 授权失败，清除本地令牌
+        // Authorization failed, clear local token
         clearToken();
+        throw new Error('Invalid or expired session');
       }
-      throw new Error('获取用户信息失败');
+      throw new Error('Failed to get user information');
     }
-
-    const data = await response.json();
-    return data.user;
+    
+    return await response.json();
   } catch (error) {
-    console.error('获取用户信息时出错:', error);
-    return null;
+    console.error('Error getting user information:', error);
+    throw error;
   }
 }
 
-// 登录函数
-export async function login(email: string, password: string) {
+export async function login(email: string, password: string): Promise<any> {
   try {
+    // Call authentication API
     const response = await fetch(
       process.env.NEXT_PUBLIC_DEV 
         ? `${process.env.NEXT_PUBLIC_API_URL_DEV}/auth/login` 
@@ -80,29 +81,29 @@ export async function login(email: string, password: string) {
         body: JSON.stringify({ email, password }),
       }
     );
-
+    
     if (!response.ok) {
-      throw new Error('登录失败');
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Login failed');
     }
-
+    
     const data = await response.json();
     
-    // 存储令牌
+    // Store token locally
     if (data.token) {
       setToken(data.token);
-      return { success: true, user: data.user };
-    } else {
-      throw new Error('未收到有效的授权令牌');
     }
+    
+    return data;
   } catch (error) {
-    console.error('登录时出错:', error);
-    return { success: false, error: error instanceof Error ? error.message : '登录失败' };
+    console.error('Login error:', error);
+    throw error;
   }
 }
 
-// 注册函数
-export async function register(email: string, password: string) {
+export async function register(email: string, password: string, name: string): Promise<any> {
   try {
+    // Call registration API
     const response = await fetch(
       process.env.NEXT_PUBLIC_DEV 
         ? `${process.env.NEXT_PUBLIC_API_URL_DEV}/auth/register` 
@@ -112,36 +113,36 @@ export async function register(email: string, password: string) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, name }),
       }
     );
-
+    
     if (!response.ok) {
-      throw new Error('注册失败');
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Registration failed');
     }
-
+    
     const data = await response.json();
     
-    // 如果注册后立即登录，存储令牌
+    // Store token if automatically logged in
     if (data.token) {
       setToken(data.token);
-      return { success: true, user: data.user };
     }
     
-    return { success: true };
+    return data;
   } catch (error) {
-    console.error('注册时出错:', error);
-    return { success: false, error: error instanceof Error ? error.message : '注册失败' };
+    console.error('Registration error:', error);
+    throw error;
   }
 }
 
-// 登出函数
+// Logout function
 export async function logout() {
   try {
-    // 清除本地令牌
+    // Clear local token
     clearToken();
     
-    // 调用登出API（可选，取决于你的后端实现）
+    // Call logout API (optional, depends on your backend implementation)
     try {
       await fetch(
         process.env.NEXT_PUBLIC_DEV 
@@ -150,13 +151,13 @@ export async function logout() {
         { method: 'POST' }
       );
     } catch (error) {
-      // 即使API调用失败，我们仍然认为本地登出成功
-      console.warn('登出API调用失败，但本地登出成功', error);
+      // Even if API call fails, we still consider local logout successful
+      console.warn('Logout API call failed, but local logout successful', error);
     }
     
     return { success: true };
   } catch (error) {
-    console.error('登出时出错:', error);
-    return { success: false, error: error instanceof Error ? error.message : '登出失败' };
+    console.error('Error during logout:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Logout failed' };
   }
 } 
