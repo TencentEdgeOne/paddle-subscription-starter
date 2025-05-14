@@ -31,7 +31,7 @@ export function isLoggedIn(): boolean {
 }
 
 // Get current user information
-export async function getCurrentUser(): Promise<any> {
+export async function getCurrentUser() {
   try {
     const token = getToken();
     if (!token) {
@@ -66,7 +66,7 @@ export async function getCurrentUser(): Promise<any> {
   }
 }
 
-export async function login(email: string, password: string): Promise<any> {
+export async function login(email: string, password: string) {
   try {
     // Call authentication API
     const response = await fetch(
@@ -101,7 +101,7 @@ export async function login(email: string, password: string): Promise<any> {
   }
 }
 
-export async function register(email: string, password: string, name: string): Promise<any> {
+export async function register(email: string, password: string, name: string) {
   try {
     // Call registration API
     const response = await fetch(
