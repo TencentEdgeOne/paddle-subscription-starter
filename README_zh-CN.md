@@ -34,6 +34,19 @@
    - 如果需要，启用“确认电子邮件”功能
 3. 从项目设置 > API获取你的Supabase URL和API密钥
 
+### Paddle 设置
+#### Paddle 设置
+
+1. 在 [https://paddle.com](https://paddle.com) 创建一个新的 Paddle 账户
+2. 在你的 Paddle 控制面板中，找到你的产品并创建一个新的产品
+3. 获取你的 Paddle API 密钥
+
+#### Paddle 产品设置
+
+1. 在你的 Paddle 控制面板中，找到你的产品并点击 "编辑"
+2. 在 "价格" 选项卡中，设置你的产品的价格和订阅计划
+3. 在 "Webhook" 选项卡中，设置你的 Webhook URL 为 `https://yourdomain.com/api/paddle/webhook`
+
 ### 安装
 
 1. 克隆存储库：

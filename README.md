@@ -34,6 +34,19 @@ This is a demonstration application showcasing login, registration, and subscrip
    - Enable "Confirm email" feature if desired
 3. Get your Supabase URL and API keys from Project Settings > API
 
+### Paddle Setup
+#### Paddle Setup
+
+1. Create a new Paddle account at [https://paddle.com](https://paddle.com)
+2. In your Paddle control panel, find your product and create a new product
+3. Get your Paddle API key
+
+#### Paddle Product Setup
+
+1. In your Paddle control panel, find your product and click "Edit"
+2. In the "Prices" tab, set your product's price and subscription plan
+3. In the "Webhook" tab, set your Webhook URL to `https://yourdomain.com/api/paddle/webhook`
+
 ### Installation
 
 1. Clone the repository:
