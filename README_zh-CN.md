@@ -139,4 +139,4 @@ npm run functions:dev
 
 ## 许可证
 
-此项目根据MIT许可证进行许可。
+本项目根据MIT许可证进行授权 - 详情请见[LICENSE](LICENSE)文件。

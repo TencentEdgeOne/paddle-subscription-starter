@@ -67,6 +67,38 @@ Replace the Supabase values with your actual project credentials.
 
 ### Development
 
+#### Environment Variables
+```
+# Add the following environment variables for handling cross-origin issues during local debugging
+NEXT_PUBLIC_DEV=true
+NEXT_PUBLIC_API_URL_DEV=http://localhost:8088/
+FRONT_END_URL_DEV=http://localhost:3000/
+
+# Supabase Configuration
+SUPABASE_URL=https://xxxxxx.supabase.co
+SUPABASE_ANON_KEY=xxxxxxxx
+SUPABASE_SERVICE_ROLE_KEY=xxxxxxxxxx
+
+# Paddle Configuration
+NEXT_PUBLIC_PADDLE_ENVIRONMENT=sandbox
+PADDLE_API_KEY=pdl_sdbx_apikey_xxxxxx
+NEXT_PUBLIC_PADDLE_CLIENT_TOKEN=test_xxxxxxx
+PADDLE_WEBHOOK_SECRET=pdl_ntfset_xxxxxxxxx
+```
+
+Acquisition Methods:
+| Variable | Purpose | Acquisition Method |
+| --- | --- | --- |
+| SUPABASE_URL | Supabase request URL | Obtained from Supabase Dashboard > Project Settings > Data API tab |
+| SUPABASE_ANON_KEY | Public key used for initiating Supabase requests | Obtained from Supabase Dashboard > Project Settings > Data API tab |
+| SUPABASE_SERVICE_ROLE_KEY | Key used for initiating non-public Supabase requests | Obtained from Supabase Dashboard > Project Settings > Data API tab |
+| NEXT_PUBLIC_PADDLE_ENVIRONMENT | Paddle project environment | 'production' or 'sandbox' |
+| PADDLE_API_KEY | API Key for interactions between functions and Paddle | Created under [Paddle > Developer tools > Authentication](https://sandbox-vendors.paddle.com/authentication-v2) |
+| NEXT_PUBLIC_PADDLE_CLIENT_TOKEN | Key used by the client for interactions with Paddle | Created under [Paddle > Developer tools > Authentication](https://sandbox-vendors.paddle.com/authentication-v2) |
+| PADDLE_WEBHOOK_SECRET | Key for identifying the source of Webhook requests, ensuring security | Created under [Paddle > Developer tools > Notifications](https://sandbox-vendors.paddle.com/notifications) |
+
+#### Local Development
+
 1. Start the Next.js development server:
 
 ```bash
@@ -107,4 +139,4 @@ Make sure to add all environment variables in your EdgeOne Pages dashboard.
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
