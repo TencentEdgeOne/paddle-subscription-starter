@@ -128,11 +128,9 @@ In a production environment, you would extend the Supabase database with:
 - `subscriptions` table - Store subscription information
 - `plans` table - Store plan details
 
-## Deployment
+## Deploy
 
-This application is designed to be deployed to EdgeOne Pages. Follow the EdgeOne documentation for deployment instructions.
-
-Make sure to add all environment variables in your EdgeOne Pages dashboard.
+[![Deploy with EdgeOne Pages](https://cdnstatic.tencentcs.com/edgeone/pages/deploy.svg)](https://edgeone.ai/pages/new?from=github&template=paddle-subscription-starter)
 
 ## License
 

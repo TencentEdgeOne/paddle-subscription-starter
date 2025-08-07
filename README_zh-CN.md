@@ -129,10 +129,8 @@ npm run functions:dev
 - `plans` 表 - 存储计划详细信息
 
 ## 部署
+[![使用 EdgeOne Pages 部署](https://cdnstatic.tencentcs.com/edgeone/pages/deploy.svg)](https://console.cloud.tencent.com/edgeone/pages/new?from=github&template=paddle-subscription-starter)
 
-此应用程序旨在部署到EdgeOne Pages。请遵循EdgeOne文档中的部署说明。
-
-确保在你的EdgeOne Pages仪表盘中添加了所有环境变量。
 
 ## 许可证
 
