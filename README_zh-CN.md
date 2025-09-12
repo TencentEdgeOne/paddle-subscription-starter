@@ -134,4 +134,4 @@ npm run functions:dev
 
 ## 许可证
 
-本项目根据MIT许可证进行授权 - 详情请见[LICENSE](LICENSE)文件。
+本项目根据MIT许可证进行授权 - 详情请见[LICENSE](https://github.com/github/choosealicense.com/blob/gh-pages/_licenses/mit.txt)文件。
