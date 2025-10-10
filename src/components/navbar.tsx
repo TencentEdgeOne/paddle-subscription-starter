@@ -1,37 +1,52 @@
 
+'use client';
+
+import { useEffect, useState } from 'react';
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { cookies } from 'next/headers';
 import { LogoutButton } from './logout-button';
 
-export const dynamic = 'force-dynamic';
-
 async function checkSubscriptionStatus() {
-  if(!process.env.NEXT_PUBLIC_API_URL) {
-    console.error('NEXT_PUBLIC_API_URL is not defined');
-    return false;
-  }
-  const cookieStore = await cookies();
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/auth/user`,
-    {
+  try {
+    const response = await fetch(`/api/auth/user`, {
       method: 'GET',
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        'Cookie': cookieStore.toString()
       },
-    }
-  );
-  if (response.ok) {
-    return true;
+    });
+    return response.ok;
+  } catch (e) {
+    console.error('Error checking subscription status:', e);
+    return false;
   }
-  return false;
 }
 
-export async function Navbar() {
-  let isLoggedIn = false;
-  isLoggedIn = await checkSubscriptionStatus();
+export function Navbar() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    checkSubscriptionStatus()
+      .then((ok) => {
+        if (mounted) setIsLoggedIn(ok);
+      })
+      .catch(() => {
+        if (mounted) setIsLoggedIn(false);
+      })
+      .finally(() => {
+        if (mounted) setIsLoading(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
   
   return (
     <nav className="border-b bg-white">
@@ -47,12 +62,14 @@ export async function Navbar() {
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
               <Link
                 href="/"
+                prefetch={false}
                 className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
               >
                 Home
               </Link>
               <Link
                 href="/pricing"
+                prefetch={false}
                 className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
               >
                 Pricing
@@ -60,6 +77,7 @@ export async function Navbar() {
               {isLoggedIn && (
                 <Link
                   href="/dashboard"
+                  prefetch={false}
                   className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
                 >
                   Dashboard
@@ -67,27 +85,31 @@ export async function Navbar() {
               )}
             </div>
           </div>
-          <div className="flex items-center">
-            {isLoggedIn ? (
-              <LogoutButton />
-            ) : (
-              <div className="flex space-x-4">
-                <Button
-                  variant="ghost"
-                  asChild
-                >
-                  <Link href="/login">
-                    Login
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                >
-                  <Link href="/register">
-                    Register
-                  </Link>
-                </Button>
-              </div>
+          <div className="flex items-center" suppressHydrationWarning>
+            {!hasMounted ? null : (
+              isLoading ? null : (
+                isLoggedIn ? (
+                  <LogoutButton />
+                ) : (
+                  <div className="flex space-x-4">
+                    <Button
+                      variant="ghost"
+                      asChild
+                    >
+                      <Link href="/login" prefetch={false}>
+                        Login
+                      </Link>
+                    </Button>
+                    <Button
+                      asChild
+                    >
+                      <Link href="/register" prefetch={false}>
+                        Register
+                      </Link>
+                    </Button>
+                  </div>
+                )
+              )
             )}
           </div>
         </div>

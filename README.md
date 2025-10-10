@@ -67,9 +67,6 @@ npm install
 
 #### Environment Variables
 ```
-# Node Function API request URL, modify to production URL after deployment
-NEXT_PUBLIC_API_URL=http://localhost:8088/
-
 # Supabase configuration
 SUPABASE_URL=https://xxxxxx.supabase.co
 SUPABASE_ANON_KEY=xxxxxxxx

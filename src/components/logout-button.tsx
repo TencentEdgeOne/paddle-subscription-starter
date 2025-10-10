@@ -5,11 +5,8 @@ import { Button } from "@/components/ui/button";
 export function LogoutButton() {
   const handleLogout = async () => {
     try {
-      if(!process.env.NEXT_PUBLIC_API_URL) {
-        throw new Error('NEXT_PUBLIC_API_URL is not defined');
-      }
       await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`,
+        `/api/auth/logout`,
         {
           method: "POST",
           credentials: 'include', // Ensure cookies are sent
