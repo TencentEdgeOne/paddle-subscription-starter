@@ -1,21 +1,22 @@
-# Paddle Subscription Starter
+# Paddle Subscription Demo
 
-This is a demonstration application showcasing login, registration, and subscription features using EdgeOne Pages and Supabase authentication.
+This is a demo application showcasing login, registration, and subscription features, using EdgeOne Pages and Supabase authentication.
 
 ## Features
 
-- User authentication (login/register) via Supabase
+- User authentication via Supabase (login/registration)
 - Email verification flow
 - Subscription plans with different pricing tiers
 - Subscription management
 - Protected dashboard for subscribed users
 
-## Technology Stack
+## Tech Stack
 
-- **Frontend**: Next.js (Static Site Generation)
-- **Components**: Custom components with shadcn/ui
+- **Framework**: Next.js (full-stack development)
+- **Debug/Deploy Tool**: EdgeOne CLI
+- **Components**: Custom components using shadcn/ui
 - **Styling**: Tailwind CSS
-- **Backend**: EdgeOne Functions for APIs
+- **Backend**: EdgeOne Node Functions for APIs
 - **Authentication**: Supabase Authentication
 - **Database**: Supabase (PostgreSQL)
 
@@ -30,22 +31,22 @@ This is a demonstration application showcasing login, registration, and subscrip
 
 1. Create a new Supabase project at [https://supabase.com](https://supabase.com)
 2. In your Supabase dashboard, go to Authentication > Settings and:
-   - Configure Email authentication provider
-   - Enable "Confirm email" feature if desired
+   - Configure the email authentication provider
+   - Enable "Confirm Email" if needed
 3. Get your Supabase URL and API keys from Project Settings > API
 
 ### Paddle Setup
 #### Paddle Setup
 
 1. Create a new Paddle account at [https://paddle.com](https://paddle.com)
-2. In your Paddle control panel, find your product and create a new product
-3. Get your Paddle API key
+2. In your Paddle dashboard, find your product and create a new product
+3. Get your Paddle API keys
 
 #### Paddle Product Setup
 
-1. In your Paddle control panel, find your product and click "Edit"
-2. In the "Prices" tab, set your product's price and subscription plan
-3. In the "Webhook" tab, set your Webhook URL to `https://yourdomain.com/api/paddle/webhook`
+1. In your Paddle dashboard, find your product and click "Edit"
+2. In the "Prices" tab, set your product prices and subscription plans
+3. In the "Webhook" tab, set your webhook URL to `https://yourdomain.com/api/paddle/webhook`
 
 ### Installation
 
@@ -66,49 +67,41 @@ npm install
 
 #### Environment Variables
 ```
-# Add the following environment variables for handling cross-origin issues during local debugging
-NEXT_PUBLIC_DEV=true
-NEXT_PUBLIC_API_URL_DEV=http://localhost:8088/
-FRONT_END_URL_DEV=http://localhost:3000/
+# Node Function API request URL, modify to production URL after deployment
+NEXT_PUBLIC_API_URL=http://localhost:8088/
 
-# Supabase Configuration
+# Supabase configuration
 SUPABASE_URL=https://xxxxxx.supabase.co
 SUPABASE_ANON_KEY=xxxxxxxx
 SUPABASE_SERVICE_ROLE_KEY=xxxxxxxxxx
 
-# Paddle Configuration
+# Paddle configuration
 NEXT_PUBLIC_PADDLE_ENVIRONMENT=sandbox
 PADDLE_API_KEY=pdl_sdbx_apikey_xxxxxx
 NEXT_PUBLIC_PADDLE_CLIENT_TOKEN=test_xxxxxxx
 PADDLE_WEBHOOK_SECRET=pdl_ntfset_xxxxxxxxx
 ```
 
-Acquisition Methods:
-| Variable | Purpose | Acquisition Method |
+How to obtain:
+| Variable | Purpose | How to Obtain |
 | --- | --- | --- |
-| SUPABASE_URL | Supabase request URL | Obtained from Supabase Dashboard > Project Settings > Data API tab |
-| SUPABASE_ANON_KEY | Public key used for initiating Supabase requests | Obtained from Supabase Dashboard > Project Settings > Data API tab |
-| SUPABASE_SERVICE_ROLE_KEY | Key used for initiating non-public Supabase requests | Obtained from Supabase Dashboard > Project Settings > Data API tab |
+| SUPABASE_URL | Supabase request URL | Get from Supabase Dashboard > Project Settings > Data API tab |
+| SUPABASE_ANON_KEY | Public key for making Supabase requests | Get from Supabase Dashboard > Project Settings > Data API tab |
+| SUPABASE_SERVICE_ROLE_KEY | Secret key for making non-public Supabase requests | Get from Supabase Dashboard > Project Settings > Data API tab |
 | NEXT_PUBLIC_PADDLE_ENVIRONMENT | Paddle project environment | 'production' or 'sandbox' |
-| PADDLE_API_KEY | API Key for interactions between functions and Paddle | Created under [Paddle > Developer tools > Authentication](https://sandbox-vendors.paddle.com/authentication-v2) |
-| NEXT_PUBLIC_PADDLE_CLIENT_TOKEN | Key used by the client for interactions with Paddle | Created under [Paddle > Developer tools > Authentication](https://sandbox-vendors.paddle.com/authentication-v2) |
-| PADDLE_WEBHOOK_SECRET | Key for identifying the source of Webhook requests, ensuring security | Created under [Paddle > Developer tools > Notifications](https://sandbox-vendors.paddle.com/notifications) |
+| PADDLE_API_KEY | API Key for functions to interact with Paddle | Create at [Paddle > Developer tools > Authentication](https://sandbox-vendors.paddle.com/authentication-v2) |
+| NEXT_PUBLIC_PADDLE_CLIENT_TOKEN | Key for client-side use, for frontend to interact with Paddle | Create at [Paddle > Developer tools > Authentication](https://sandbox-vendors.paddle.com/authentication-v2) |
+| PADDLE_WEBHOOK_SECRET | Secret key for webhook to verify request source and ensure security | Create at [Paddle > Developer tools > Notifications](https://sandbox-vendors.paddle.com/notifications) |
 
 #### Local Development
 
-1. Start the Next.js development server:
+1. For local development and debugging of Next.js + Node Functions full-stack project, if you haven't installed [EdgeOne CLI](https://pages.edgeone.ai/document/edgeone-cli), install it first
 
 ```bash
-npm run dev
+edgeone pages dev
 ```
 
-2. In a separate terminal, start the EdgeOne Functions development server:
-
-```bash
-npm run functions:dev
-```
-
-3. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
+2. Open [http://localhost:8088](http://localhost:8088) in your browser to view the application.
 
 ## Project Structure
 
@@ -116,21 +109,20 @@ npm run functions:dev
   - `/app` - Next.js app directory
   - `/components` - React components
   - `/lib` - Utility functions
-- `/functions` - EdgeOne Functions for backend APIs
+- `/node-functions` - EdgeOne Node Functions for backend APIs
   - `/auth` - Authentication APIs integrated with Supabase
   - `/subscription` - Subscription APIs (subscribe, status, cancel)
-  - `/lib` - Shared utilities for EdgeOne Functions
+  - `/lib` - Shared utilities for EdgeOne Node Functions
 
 ## Database Design
 
-In a production environment, you would extend the Supabase database with:
+In a production environment, you would extend the Supabase database to include:
 
-- `subscriptions` table - Store subscription information
-- `plans` table - Store plan details
+- `subscriptions` table - stores subscription information
+- `plans` table - stores plan details
 
-## Deploy
-
-[![Deploy with EdgeOne Pages](https://cdnstatic.tencentcs.com/edgeone/pages/deploy.svg)](https://edgeone.ai/pages/new?from=github&template=paddle-subscription-starter)
+## Deployment
+[![Deploy with EdgeOne Pages](https://cdnstatic.tencentcs.com/edgeone/pages/deploy.svg)](https://console.cloud.tencent.com/edgeone/pages/new?from=github&template=paddle-subscription-starter)
 
 ## License
 

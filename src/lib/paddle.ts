@@ -166,9 +166,10 @@ export const openCheckout = (
  */
 export const getPrices = async () => {
   try {
-    const response = await fetch(
-      process.env.NEXT_PUBLIC_DEV ? `${process.env.NEXT_PUBLIC_API_URL_DEV}/paddle/prices` : `${process.env.NEXT_PUBLIC_API_URL}/paddle/prices`
-    );
+    if(!process.env.NEXT_PUBLIC_API_URL) {
+      throw new Error('NEXT_PUBLIC_API_URL is not defined');
+    }
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/paddle/prices`);
     if (!response.ok) {
       throw new Error("Failed to fetch prices");
     }

@@ -1,28 +1,14 @@
-import { createSupabaseAdminClient } from '../lib/supabase.js';
-
+import { createSupabaseClient } from '../../lib/supabase.js';
+import { cookiesOption } from '../../lib/cookies.js';
 export async function onRequest(context) {
   // Set CORS headers (development mode)
   const headers = {
     'Content-Type': 'application/json',
   };
 
-
-  // Handle preflight requests
-  if (context.request.method === 'OPTIONS') {
-    return new Response(null, { headers });
-  }
-
-  // Only allow POST requests
-  if (context.request.method !== 'POST') {
-    return new Response(
-      JSON.stringify({ success: false, message: 'Method not allowed' }),
-      { status: 405, headers }
-    );
-  }
-
   try {
     // Parse request body
-    const reqBody = await context.request.json();
+    const reqBody = await context.request.body;
     const { email, password } = reqBody;
 
     if (!email || !password) {
@@ -33,7 +19,7 @@ export async function onRequest(context) {
     }
 
     // Initialize Supabase client
-    const supabase = createSupabaseAdminClient(context);
+    const supabase = createSupabaseClient(context.env);
 
     // Use Supabase to register
     const { data, error } = await supabase.auth.signUp({
@@ -49,7 +35,12 @@ export async function onRequest(context) {
       );
     }
 
-    // If email verification is required
+    // If email verification is not required,  login directly
+    const cookieValue = `access_token=${data.session.access_token}; HttpOnly; Secure; SameSite=Strict; Max-Age=${cookiesOption.maxAge}; Path=/`;
+      const responseHeaders = {
+      ...headers,
+      'Set-Cookie': cookieValue
+    };
     if (data.user && !data.user.email_confirmed_at) {
       return new Response(
         JSON.stringify({
@@ -57,16 +48,15 @@ export async function onRequest(context) {
           message: 'Registration successful, please check your email to verify your account',
           requiresEmailVerification: true
         }),
-        { status: 200, headers }
+        { status: 200, responseHeaders }
       );
     }
 
-    // If email verification is not required, login directly
+    // If email verification is required
     return new Response(
       JSON.stringify({
         success: true,
         message: 'Registration successful',
-        token: data.session?.access_token,
         user: {
           id: data.user.id,
           email: data.user.email,

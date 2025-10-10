@@ -1,4 +1,4 @@
-import { callPaddleApi, getProductDetails } from '../lib/paddle-utils.js';
+import { callPaddleApi, getProductDetails } from '../../lib/paddle-utils.js';
 
 /**
  * Endpoint to get Paddle price information
@@ -10,28 +10,15 @@ export async function onRequest(context) {
   };
 
 
-  // Handle preflight requests
-  if (context.request.method === 'OPTIONS') {
-    return new Response(null, { headers });
-  }
-
-  // Only allow GET requests
-  if (context.request.method !== 'GET') {
-    return new Response(
-      JSON.stringify({ success: false, message: 'Method not allowed' }),
-      { status: 405, headers }
-    );
-  }
-
   try {
     // Use utility function to call Paddle API for prices
-    const priceData = await callPaddleApi(context, `/prices?order_by=unit_price.amount[ASC]`, 'GET');
+    const priceData = await callPaddleApi(`/prices?order_by=unit_price.amount[ASC]`, 'GET');
     
     // Extract product IDs
     const productIds = priceData.data.map(price => price.product_id);
     
     // Get product details
-    const products = await getProductDetails(context, productIds);
+    const products = await getProductDetails(productIds, context.env);
     
     // Create a mapping from product ID to product details
     const productMap = {};

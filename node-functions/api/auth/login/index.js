@@ -1,4 +1,5 @@
-import { createSupabaseAdminClient } from '../lib/supabase.js';
+import { createSupabaseClient } from '../../lib/supabase.js';
+import { cookiesOption } from '../../lib/cookies.js';
 
 export async function onRequest(context) {
   // Set CORS headers (development mode)
@@ -6,23 +7,9 @@ export async function onRequest(context) {
     'Content-Type': 'application/json',
   };
 
-
-  // Handle preflight requests
-  if (context.request.method === 'OPTIONS') {
-    return new Response(null, { headers });
-  }
-
-  // Only allow POST requests
-  if (context.request.method !== 'POST') {
-    return new Response(
-      JSON.stringify({ success: false, message: 'Method not allowed' }),
-      { status: 405, headers }
-    );
-  }
-
   try {
     // Parse request body
-    const reqBody = await context.request.json();
+    const reqBody = context.request.body;
     const { email, password } = reqBody;
 
     if (!email || !password) {
@@ -33,7 +20,7 @@ export async function onRequest(context) {
     }
 
     // Initialize Supabase client
-    const supabase = createSupabaseAdminClient(context);
+    const supabase = createSupabaseClient(context.env);
 
     // Use Supabase to login
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -49,6 +36,15 @@ export async function onRequest(context) {
       );
     }
 
+    // 创建 cookie 字符串
+    const cookieValue = `access_token=${data.session.access_token}; HttpOnly; Secure; SameSite=${cookiesOption.sameSite}; Max-Age=${cookiesOption.maxAge}; Path=/`;
+    
+    // 将 cookie 添加到响应头
+    const responseHeaders = {
+      ...headers,
+      'Set-Cookie': cookieValue
+    };
+
     // Successfully logged in, return token and user data
     return new Response(
       JSON.stringify({
@@ -60,7 +56,7 @@ export async function onRequest(context) {
           email_confirmed_at: data.user.email_confirmed_at,
         }
       }),
-      { status: 200, headers }
+      { status: 200, headers: responseHeaders }
     );
   } catch (error) {
     console.error('Error processing login request:', error);

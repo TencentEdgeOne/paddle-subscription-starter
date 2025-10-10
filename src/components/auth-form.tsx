@@ -4,9 +4,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { setToken } from "@/lib/auth";
-
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 interface AuthFormProps {
   type: "login" | "register";
 }
@@ -26,12 +25,14 @@ export function AuthForm({ type }: AuthFormProps) {
     setEmailSent(false);
 
     try {
-      const endpoint = type === "login" ? "/auth/login" : "/auth/register";
+      const endpoint = type === "login" ? "/api/auth/login" : "/api/auth/register";
       const body = type === "login" 
         ? { email, password } 
         : { name, email, password };
-      console.log("????", process.env);
-      const response = await fetch(process.env.NEXT_PUBLIC_DEV ? `${process.env.NEXT_PUBLIC_API_URL_DEV}${endpoint}` : endpoint, {
+      if(!process.env.NEXT_PUBLIC_API_URL) {
+        throw new Error('NEXT_PUBLIC_API_URL is not defined');
+      }
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -40,26 +41,21 @@ export function AuthForm({ type }: AuthFormProps) {
       });
 
       const data = await response.json();
-
       if (!response.ok) {
         throw new Error(data.message || "Authentication failed");
       }
 
       // Handle email confirmation requirement
-      if (data.requiresEmailConfirmation) {
+      if (data.requiresEmailVerification) {
         setEmailSent(true);
         return;
       }
 
-      // Save authentication token to localStorage
-      if (data.token) {
+      if(data.token) {
         setToken(data.token);
-        
-        // Redirect to dashboard
         window.location.href = "/dashboard";
-      } else {
-        setError("No authentication token received");
       }
+
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error during authentication");
     } finally {
