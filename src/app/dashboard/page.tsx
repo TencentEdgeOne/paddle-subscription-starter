@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { type Subscription } from "@/lib/supabase";
-import { getToken, clearToken } from "@/lib/auth";
 
 export default function DashboardPage() {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -15,21 +14,17 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchSubscription = async () => {
       try {
-        // Get token from local storage
-        const token = getToken();
-        if (!token) {
-          window.location.href = "/login";
-          return;
+        if(!process.env.NEXT_PUBLIC_API_URL) {
+          throw new Error('NEXT_PUBLIC_API_URL is not defined');
         }
-
         // Get subscription information from edge function API
         const response = await fetch(
-          process.env.NEXT_PUBLIC_DEV 
-            ? `${process.env.NEXT_PUBLIC_API_URL_DEV}/subscription/status` 
-            : "/subscription/status",
+          `${process.env.NEXT_PUBLIC_API_URL}/api/subscription/status`,
           {
+            method: 'GET',
+            credentials: 'include',
             headers: {
-              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
             },
           }
         );
@@ -37,7 +32,6 @@ export default function DashboardPage() {
         if (!response.ok) {
           if (response.status === 401) {
             // Access token invalid or expired, redirect to login page
-            clearToken();
             window.location.href = "/login";
             return;
           }
@@ -45,6 +39,7 @@ export default function DashboardPage() {
         }
 
         const data = await response.json();
+        console.log('subscription data', data)
         setSubscription(data.subscription);
       } catch (err) {
         console.error('Error getting subscription:', err);
@@ -68,20 +63,13 @@ export default function DashboardPage() {
 
     try {
       setCancelLoading(true);
-      const token = getToken();
-      if (!token) {
-        window.location.href = "/login";
-        return;
-      }
 
       const response = await fetch(
-        process.env.NEXT_PUBLIC_DEV 
-          ? `${process.env.NEXT_PUBLIC_API_URL_DEV}/subscription/cancel` 
-          : "/subscription/cancel",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/subscription/cancel`,
         {
           method: "POST",
+          credentials: 'include',
           headers: {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         }
@@ -186,4 +174,4 @@ export default function DashboardPage() {
       )}
     </div>
   );
-} 
+}

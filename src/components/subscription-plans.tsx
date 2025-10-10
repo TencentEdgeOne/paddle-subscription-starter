@@ -29,20 +29,21 @@ export function SubscriptionPlans() {
   
   // Initialize Paddle when component mounts
   useEffect(() => {
+    console.log('pricing init paddle')
     initPaddle();
     
     // Get user email from API
     
-    
     // Fetch prices from our API
     const fetchPrices = async () => {
       try {
-        const response = await fetch(process.env.NEXT_PUBLIC_DEV ? `${process.env.NEXT_PUBLIC_API_URL_DEV}/paddle/prices` : `/paddle/prices`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/paddle/prices`);
         if (!response.ok) {
           throw new Error("Failed to fetch subscription plans");
         }
         
         const data = await response.json();
+        console.log('price data,', data)
         if (data.success && data.prices) {
           setPrices(data.prices);
         }
@@ -83,7 +84,7 @@ export function SubscriptionPlans() {
   };
   
   if (prices.length === 0) {
-    return <div className="text-center py-8">Loading subscription plans...</div>;
+    return <div className="text-center py-8">Please set your subscription plans...</div>;
   }
   
   return (

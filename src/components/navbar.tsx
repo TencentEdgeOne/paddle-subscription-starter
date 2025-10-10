@@ -1,23 +1,37 @@
-"use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { getToken, clearToken } from "@/lib/auth";
-export function Navbar() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  
-  useEffect(() => {
-    // Check if user is logged in
-    const token = getToken();
-    setIsLoggedIn(!!token);
-  }, []);
-  
-  const handleLogout = () => {
-    clearToken();
-    setIsLoggedIn(false);
-    window.location.href = "/";
-  };
+import { cookies } from 'next/headers';
+import { LogoutButton } from './logout-button';
+
+export const dynamic = 'force-dynamic';
+
+async function checkSubscriptionStatus() {
+  if(!process.env.NEXT_PUBLIC_API_URL) {
+    console.error('NEXT_PUBLIC_API_URL is not defined');
+    return false;
+  }
+  const cookieStore = await cookies();
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/auth/user`,
+    {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': cookieStore.toString()
+      },
+    }
+  );
+  if (response.ok) {
+    return true;
+  }
+  return false;
+}
+
+export async function Navbar() {
+  let isLoggedIn = false;
+  isLoggedIn = await checkSubscriptionStatus();
   
   return (
     <nav className="border-b bg-white">
@@ -55,12 +69,7 @@ export function Navbar() {
           </div>
           <div className="flex items-center">
             {isLoggedIn ? (
-              <Button
-                variant="ghost"
-                onClick={handleLogout}
-              >
-                Logout
-              </Button>
+              <LogoutButton />
             ) : (
               <div className="flex space-x-4">
                 <Button
@@ -85,4 +94,4 @@ export function Navbar() {
       </div>
     </nav>
   );
-} 
+}

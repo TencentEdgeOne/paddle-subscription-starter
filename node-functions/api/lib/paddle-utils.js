@@ -1,19 +1,18 @@
 /**
  * Make a Paddle API request
- * @param {object} context - EdgeOne function context
  * @param {string} endpoint - API endpoint path
  * @param {string} method - HTTP method
  * @param {object} [body] - Request body (object form)
  * @returns {Promise<object>} API response
  */
-export async function callPaddleApi(context, endpoint, method = 'GET', body = null) {
-  const paddleApiKey = context.env.PADDLE_API_KEY;
+export async function callPaddleApi(endpoint, method = 'GET', body = null) {
+  const paddleApiKey = process.env.PADDLE_API_KEY;
   
   if (!paddleApiKey) {
     throw new Error('Paddle API key not configured');
   }
   
-  const paddleEnv = context.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT || 'sandbox';
+  const paddleEnv = process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT || 'sandbox';
   const apiBaseUrl = paddleEnv === 'production'
     ? 'https://api.paddle.com'
     : 'https://sandbox-api.paddle.com';
@@ -214,11 +213,10 @@ export async function handleSubscriptionChange(supabase, subscriptionData) {
 
 /**
  * Get product details
- * @param {object} context - EdgeOne function context
  * @param {string[]} productIds - Product ID array
  * @returns {Promise<object[]>} Product details array
  */
-export async function getProductDetails(context, productIds) {
+export async function getProductDetails(productIds) {
   if (!productIds || productIds.length === 0) {
     return [];
   }
@@ -231,7 +229,7 @@ export async function getProductDetails(context, productIds) {
     const queryParams = uniqueProductIds.map(id => `id=${id}`).join('&');
     
     // Call Paddle API to get product details
-    const response = await callPaddleApi(context, `/products?${queryParams}`, 'GET');
+    const response = await callPaddleApi(`/products?${queryParams}`, 'GET');
     
     return response.data || [];
   } catch (error) {

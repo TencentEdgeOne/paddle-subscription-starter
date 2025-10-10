@@ -1,5 +1,5 @@
-import { createSupabaseAdminClient } from '../lib/supabase.js';
-import { validateWebhookSignature, handleCustomerCreation, handleSubscriptionChange } from '../lib/paddle-utils.js';
+import { createSupabaseClient } from '../../lib/supabase.js';
+import { validateWebhookSignature, handleCustomerCreation, handleSubscriptionChange } from '../../lib/paddle-utils.js';
 
 // Webhook handler function
 export async function onRequest(context) {
@@ -8,22 +8,9 @@ export async function onRequest(context) {
     'Content-Type': 'application/json',
   };
 
-  // Handle preflight requests
-  if (context.request.method === 'OPTIONS') {
-    return new Response(null, { headers });
-  }
-
-  // Only allow POST requests
-  if (context.request.method !== 'POST') {
-    return new Response(
-      JSON.stringify({ success: false, message: 'Method not allowed' }),
-      { status: 405, headers }
-    );
-  }
-
   try {
     // 1. Get raw request body - important: don't process the request body
-    const rawBody = await context.request.text();
+    const rawBody = await context.request.body;
     let payload;
     
     try {
@@ -40,7 +27,7 @@ export async function onRequest(context) {
 
     // 2. Get Paddle-Signature header
     const signatureHeader = context.request.headers.get('Paddle-Signature');
-    const webhookSecret = context.env.PADDLE_WEBHOOK_SECRET;
+    const webhookSecret = process.env.PADDLE_WEBHOOK_SECRET;
     
     // 3. Verify signature
     if (webhookSecret && signatureHeader) {
@@ -58,18 +45,14 @@ export async function onRequest(context) {
       console.log('Signature verification successful');
     } else {
       // Only allow unverified webhooks in development environment
-      if (context.env.NEXT_PUBLIC_DEV !== 'true') {
-        console.warn('Missing webhook secret or signature in production environment');
-        return new Response(
-          JSON.stringify({ success: false, message: 'Request missing required verification information' }),
-          { status: 401, headers }
-        );
-      }
-      console.warn('Development mode: Skipping webhook signature verification');
+      return new Response(
+        JSON.stringify({ success: false, message: 'Request missing required verification information' }),
+        { status: 401, headers }
+      );
     }
 
     // Initialize Supabase client
-    const supabase = createSupabaseAdminClient(context);
+    const supabase = createSupabaseClient();
 
     // Process different events based on event type
     const eventType = payload.event_type;

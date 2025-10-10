@@ -12,10 +12,11 @@
 
 ## 技术栈
 
-- **前端**: Next.js（静态站点生成）
+- **框架**: Next.js（全栈开发）
+- **调试/部署工具**: EdgeOne CLI
 - **组件**: 使用shadcn/ui的自定义组件
 - **样式**: Tailwind CSS
-- **后端**: EdgeOne Functions用于API
+- **后端**: EdgeOne Node Functions用于API
 - **身份验证**: Supabase身份验证
 - **数据库**: Supabase（PostgreSQL）
 
@@ -66,10 +67,8 @@ npm install
 
 #### 环境变量
 ```
-# 本地调试时添加以下环境变量以处理跨域问题
-NEXT_PUBLIC_DEV=true
-NEXT_PUBLIC_API_URL_DEV=http://localhost:8088/
-FRONT_END_URL_DEV=http://localhost:3000/
+# Node Function API 请求地址，部署后请修改为生产环境地址
+NEXT_PUBLIC_API_URL=http://localhost:8088/
 
 # Supabase 配置
 SUPABASE_URL=https://xxxxxx.supabase.co
@@ -96,19 +95,13 @@ PADDLE_WEBHOOK_SECRET=pdl_ntfset_xxxxxxxxx
 
 #### 本地开发
 
-1. 启动Next.js开发服务器：
+1. 本地开发调试 Next.js + Node Functions 全栈项目，如果还没安装 [EdgeOne CLI](https://pages.edgeone.ai/document/edgeone-cli)，请先安装
 
 ```bash
-npm run dev
+edgeone pages dev
 ```
 
-2. 在另一个终端中，启动EdgeOne Functions开发服务器：
-
-```bash
-npm run functions:dev
-```
-
-3. 在浏览器中打开[http://localhost:3000](http://localhost:3000)，查看应用程序。
+2. 在浏览器中打开[http://localhost:8088](http://localhost:8088)，查看应用程序。
 
 ## 项目结构
 
@@ -116,10 +109,10 @@ npm run functions:dev
   - `/app` - Next.js应用目录
   - `/components` - React组件
   - `/lib` - 实用函数
-- `/functions` - EdgeOne Functions用于后端API
+- `/node-functions` - EdgeOne Node Functions用于后端API
   - `/auth` - 与Supabase集成的身份验证API
   - `/subscription` - 订阅API（订阅、状态、取消）
-  - `/lib` - EdgeOne Functions共享的实用工具
+  - `/lib` - EdgeOne Node Functions共享的实用工具
 
 ## 数据库设计
 
