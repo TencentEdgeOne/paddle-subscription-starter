@@ -67,9 +67,6 @@ npm install
 
 #### 环境变量
 ```
-# Node Function API 请求地址，部署后请修改为生产环境地址
-NEXT_PUBLIC_API_URL=http://localhost:8088/
-
 # Supabase 配置
 SUPABASE_URL=https://xxxxxx.supabase.co
 SUPABASE_ANON_KEY=xxxxxxxx

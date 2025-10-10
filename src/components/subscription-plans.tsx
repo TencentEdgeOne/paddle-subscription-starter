@@ -37,7 +37,7 @@ export function SubscriptionPlans() {
     // Fetch prices from our API
     const fetchPrices = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/paddle/prices`);
+        const response = await fetch(`/api/paddle/prices`);
         if (!response.ok) {
           throw new Error("Failed to fetch subscription plans");
         }

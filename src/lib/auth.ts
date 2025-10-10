@@ -40,7 +40,7 @@ export async function getCurrentUser() {
     
     // Call the API to get user information
     const response = await fetch(
-      "/api/auth/user",
+      `/api/auth/user`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -66,12 +66,9 @@ export async function getCurrentUser() {
 
 export async function login(email: string, password: string) {
   try {
-    if(!process.env.NEXT_PUBLIC_API_URL) {
-      throw new Error('NEXT_PUBLIC_API_URL is not defined');
-    }
     // Call authentication API
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
+      `/api/auth/login`,
       {
         method: 'POST',
         headers: {
@@ -102,12 +99,9 @@ export async function login(email: string, password: string) {
 
 export async function register(email: string, password: string, name: string) {
   try {
-    if(!process.env.NEXT_PUBLIC_API_URL) {
-      throw new Error('NEXT_PUBLIC_API_URL is not defined');
-    }
     // Call registration API
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`,
+      `/api/auth/register`,
       {
         method: 'POST',
         headers: {
@@ -145,7 +139,7 @@ export async function logout() {
     // Call logout API (optional, depends on your backend implementation)
     try {
       await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`,
+        `/api/auth/logout`,
         { method: 'POST' }
       );
     } catch (error) {
