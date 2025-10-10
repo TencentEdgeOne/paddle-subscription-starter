@@ -16,7 +16,7 @@ async function checkSubscriptionStatus() {
     `${process.env.NEXT_PUBLIC_API_URL}/api/auth/user`,
     {
       method: 'GET',
-      credentials: 'include', // 确保发送 cookies
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
         'Cookie': cookieStore.toString()

@@ -36,10 +36,8 @@ export async function onRequest(context) {
       );
     }
 
-    // 创建 cookie 字符串
     const cookieValue = `access_token=${data.session.access_token}; HttpOnly; Secure; SameSite=${cookiesOption.sameSite}; Max-Age=${cookiesOption.maxAge}; Path=/`;
     
-    // 将 cookie 添加到响应头
     const responseHeaders = {
       ...headers,
       'Set-Cookie': cookieValue

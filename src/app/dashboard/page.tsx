@@ -22,7 +22,7 @@ export default function DashboardPage() {
           `${process.env.NEXT_PUBLIC_API_URL}/api/subscription/status`,
           {
             method: 'GET',
-            credentials: 'include', // 确保发送 cookies
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
             },
@@ -68,7 +68,7 @@ export default function DashboardPage() {
         `${process.env.NEXT_PUBLIC_API_URL}/api/subscription/cancel`,
         {
           method: "POST",
-          credentials: 'include', // 确保发送 cookies
+          credentials: 'include',
           headers: {
             "Content-Type": "application/json",
           },
