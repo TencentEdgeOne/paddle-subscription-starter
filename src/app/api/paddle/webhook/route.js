@@ -2,7 +2,7 @@ import { createSupabaseClient } from '../../lib/supabase.js';
 import { validateWebhookSignature, handleCustomerCreation, handleSubscriptionChange } from '../../lib/paddle-utils.js';
 
 // Webhook handler function
-export async function onRequest(context) {
+export async function POST(request) { 
   // Set CORS headers (development mode)
   const headers = {
     'Content-Type': 'application/json',
@@ -10,7 +10,7 @@ export async function onRequest(context) {
 
   try {
     // 1. Get raw request body - important: don't process the request body
-    const rawBody = await context.request.body;
+    const rawBody = await request.json();
     let payload;
     
     try {
@@ -26,7 +26,7 @@ export async function onRequest(context) {
     }
 
     // 2. Get Paddle-Signature header
-    const signatureHeader = context.request.headers.get('Paddle-Signature');
+    const signatureHeader = request.headers.get('Paddle-Signature');
     const webhookSecret = process.env.PADDLE_WEBHOOK_SECRET;
     
     // 3. Verify signature

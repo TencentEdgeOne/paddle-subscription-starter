@@ -1,7 +1,7 @@
 import { createSupabaseClient } from '../../lib/supabase.js';
 import { cookiesOption } from '../../lib/cookies.js';
 
-export async function onRequest(context) {
+export async function POST(request) {
   // Set CORS headers (development mode)
   const headers = {
     'Content-Type': 'application/json',
@@ -9,7 +9,7 @@ export async function onRequest(context) {
 
   try {
     // Parse request body
-    const reqBody = context.request.body;
+    const reqBody = await request.json();
     const { email, password } = reqBody;
 
     if (!email || !password) {
@@ -20,7 +20,7 @@ export async function onRequest(context) {
     }
 
     // Initialize Supabase client
-    const supabase = createSupabaseClient(context.env);
+    const supabase = createSupabaseClient(request.env);
 
     // Use Supabase to login
     const { data, error } = await supabase.auth.signInWithPassword({

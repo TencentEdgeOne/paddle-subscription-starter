@@ -3,7 +3,7 @@ import { callPaddleApi, getProductDetails } from '../../lib/paddle-utils.js';
 /**
  * Endpoint to get Paddle price information
  */
-export async function onRequest(context) {
+export async function GET() {
   // Set CORS headers (development mode)
   const headers = {
     'Content-Type': 'application/json',
@@ -18,7 +18,7 @@ export async function onRequest(context) {
     const productIds = priceData.data.map(price => price.product_id);
     
     // Get product details
-    const products = await getProductDetails(productIds, context.env);
+    const products = await getProductDetails(productIds);
     
     // Create a mapping from product ID to product details
     const productMap = {};

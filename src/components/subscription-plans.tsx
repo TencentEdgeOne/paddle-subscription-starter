@@ -67,6 +67,7 @@ export function SubscriptionPlans() {
       const user = await getCurrentUser();
       // Check if user already has a subscription
       const isSubscribed = await checkSubscriptionStatus();
+
       if (isSubscribed) {
         window.location.href = "/dashboard";
       } else {

@@ -30,6 +30,7 @@ export async function checkSubscriptionStatus(): Promise<boolean> {
 
     // Parse response data
     const data = await response.json();
+
     // Check if user has an active subscription
     const subscription = data.subscription;
     if (!subscription) {
