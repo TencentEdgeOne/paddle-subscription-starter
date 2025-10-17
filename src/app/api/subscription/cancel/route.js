@@ -1,7 +1,7 @@
 import { callPaddleApi } from '../../lib/paddle-utils.js';
 import { createSupabaseClient } from '../../lib/supabase.js';
 
-export async function onRequest(context) {
+export async function POST(request) {
   // Set CORS headers (development mode)
   const headers = {
     'Content-Type': 'application/json',
@@ -10,7 +10,7 @@ export async function onRequest(context) {
 
   try {
     // Get the authorization token from the request
-    const accessToken = context.request.headers.get('Authorization');
+    const accessToken = request.headers.get('Authorization');
     if (!accessToken) {
       return new Response(
         JSON.stringify({ success: false, message: 'Unauthorized' }),
@@ -18,7 +18,7 @@ export async function onRequest(context) {
       );
     }    
     // Initialize Supabase client
-    const supabase = createSupabaseClient(context.env);
+    const supabase = createSupabaseClient();
     
     // Verify user token and get user information
     const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken);

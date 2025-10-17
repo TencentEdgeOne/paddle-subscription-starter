@@ -1,15 +1,15 @@
 import { createSupabaseClient } from '../../lib/supabase.js';
 
-export async function onRequest(context) {
+export async function POST(request) {
   // Set CORS headers (development mode)
   const headers = {
     'Content-Type': 'application/json',
   };
 
   try {
-    const accessToken = context.request.cookies['access_token'];
+    const accessToken = request.cookies.get('access_token').value;
     // Initialize Supabase client
-    const supabase = createSupabaseClient(context.env);
+    const supabase = createSupabaseClient();
       
     // Use Supabase to logout
     await supabase.auth.admin.signOut(accessToken);
