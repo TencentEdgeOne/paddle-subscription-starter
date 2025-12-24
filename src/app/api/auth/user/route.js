@@ -9,7 +9,7 @@ export async function GET(request) {
   try {
     // console.log(request.cookies.get('access_token'))
     // Get the authorization token from the request
-    const accessToken = request.cookies.get('access_token').value || request.headers.get('Authorization')?.split('Bearer ')[1];
+    const accessToken = request.cookies.get('access_token')?.value || request.headers.get('Authorization')?.split('Bearer ')[1];
     if (!accessToken) {
       return new Response(
         JSON.stringify({ success: false, message: 'Unauthorized' }),
