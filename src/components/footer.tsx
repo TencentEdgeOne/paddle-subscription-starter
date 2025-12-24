@@ -91,7 +91,7 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="https://github.com/yourusername/paddle-subscription-starter/blob/main/LICENSE"
+                  href="https://github.com/TencentEdgeOne/paddle-subscription-starter/blob/main/LICENSE"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-600 hover:text-gray-900 text-sm transition-colors"
