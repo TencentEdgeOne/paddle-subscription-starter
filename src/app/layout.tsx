@@ -4,8 +4,9 @@ import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
-  title: "Subscription Demo App",
-  description: "Example application demonstrating login, registration, and subscription features",
+  title: "Subscription Demo App | EdgeOne Makers",
+  description: "Example application demonstrating login, registration, and subscription features · Demo only · EdgeOne Makers",
+  keywords: "EdgeOne Makers, Demo only",
 };
 
 export default function RootLayout({
